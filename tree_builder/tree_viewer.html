@@ -273,51 +273,10 @@
             margin-top: 4px;
         }
 
-        /* Color Palette Toolbox */
-        #colorPalette {
-            position: fixed;
-            right: 20px;
-            top: 20px;
-            width: 280px;
-            max-height: 80vh;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            overflow-y: auto;
-            z-index: 2000;
-            display: none;
-        }
-
-        #colorPalette.visible {
-            display: block;
-        }
-
-        #colorPalette h2 {
-            font-size: 16px;
-            padding: 15px;
-            margin: 0;
-            background: #007bff;
-            color: white;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #colorPalette .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: auto;
-            margin: 0;
-        }
-
+        /* Family Color Items in Sidebar */
         .family-color-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .family-color-item:last-child {
@@ -328,55 +287,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .family-color-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: #2c3e50;
         }
 
         .family-color-input {
-            width: 50px;
-            height: 30px;
+            width: 45px;
+            height: 28px;
             border: 1px solid #ddd;
             border-radius: 4px;
             cursor: pointer;
         }
 
-        .btn-toggle-palette {
-            position: fixed;
-            right: 20px;
-            top: 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 1999;
-        }
-
-        .btn-toggle-palette:hover {
-            background: #0056b3;
+        .family-color-desc {
+            font-size: 10px;
+            color: #999;
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
-    <button class="btn-toggle-palette" onclick="toggleColorPalette()">🎨 Family Colors</button>
-
-    <div id="colorPalette">
-        <h2>
-            Family Colors
-            <button class="close-btn" onclick="toggleColorPalette()">×</button>
-        </h2>
-        <div id="familyColorList"></div>
-    </div>
-
     <div id="app">
         <div id="controls">
             <h1>🌳 AI Tree Viewer</h1>
@@ -587,9 +522,11 @@
                     <input type="checkbox" id="radialTextRotation" checked>
                     <label>Rotate Text Radially</label>
                 </div>
-                <div class="section-help" style="margin-top: 8px;">
-                    💡 Use the "🎨 Family Colors" button to customize each family's color
-                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>🎨 Family Colors</h3>
+                <div id="familyColorList"></div>
             </div>
 
             <div class="control-section">
@@ -1147,13 +1084,13 @@
                     .attr('x2', d => {
                         const angle = d.angle || 0;
                         const angleRad = (angle + config.startAngle) * Math.PI / 180;
-                        const distance = d.radius + config.labelDistance;
+                        const distance = (config.outerRadius * config.verticalSpread) + config.labelDistance;
                         return centerX + distance * Math.cos(angleRad);
                     })
                     .attr('y2', d => {
                         const angle = d.angle || 0;
                         const angleRad = (angle + config.startAngle) * Math.PI / 180;
-                        const distance = d.radius + config.labelDistance;
+                        const distance = (config.outerRadius * config.verticalSpread) + config.labelDistance;
                         return centerY + distance * Math.sin(angleRad);
                     })
                     .attr('stroke', d => {
@@ -1175,7 +1112,12 @@
                         // Calculate position on/beyond perimeter
                         const angle = d.angle || 0;
                         const angleRad = (angle + config.startAngle) * Math.PI / 180;
-                        const distance = d.radius + config.labelDistance;
+
+                        // For "extended" mode, use outerRadius; for "perimeter", use node radius + distance
+                        const distance = config.labelPositioning === 'extended'
+                            ? (config.outerRadius * config.verticalSpread) + config.labelDistance
+                            : d.radius + config.labelDistance;
+
                         return centerX + distance * Math.cos(angleRad);
                     }
                     return d.x;
@@ -1184,7 +1126,12 @@
                     if (isRadial && config.labelPositioning !== 'node') {
                         const angle = d.angle || 0;
                         const angleRad = (angle + config.startAngle) * Math.PI / 180;
-                        const distance = d.radius + config.labelDistance;
+
+                        // For "extended" mode, use outerRadius; for "perimeter", use node radius + distance
+                        const distance = config.labelPositioning === 'extended'
+                            ? (config.outerRadius * config.verticalSpread) + config.labelDistance
+                            : d.radius + config.labelDistance;
+
                         return centerY + distance * Math.sin(angleRad);
                     }
                     return d.y + (d.children.length > 0 ? -12 : 15);
@@ -1206,7 +1153,12 @@
                         const angle = d.angle || 0;
                         const totalAngle = angle + config.startAngle;
                         const angleRad = totalAngle * Math.PI / 180;
-                        const distance = d.radius + config.labelDistance;
+
+                        // Use same distance calculation as x/y positioning
+                        const distance = config.labelPositioning === 'extended'
+                            ? (config.outerRadius * config.verticalSpread) + config.labelDistance
+                            : d.radius + config.labelDistance;
+
                         const x = centerX + distance * Math.cos(angleRad);
                         const y = centerY + distance * Math.sin(angleRad);
 
@@ -1334,12 +1286,6 @@
                 `;
                 list.appendChild(item);
             });
-        }
-
-        // Toggle color palette visibility
-        function toggleColorPalette() {
-            const palette = document.getElementById('colorPalette');
-            palette.classList.toggle('visible');
         }
 
         // Update family color and re-render
