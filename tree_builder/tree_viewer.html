@@ -309,6 +309,20 @@
             color: #999;
             margin-top: 2px;
         }
+
+        /* Year radius controls */
+        #yearRadiusControls {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 8px;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        .year-radius-input {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -390,6 +404,15 @@
                     <input type="number" id="outerRadius" min="200" max="3000" step="50" value="800">
                     <div class="section-help">Size of outer edge/present (default: 800)</div>
                 </div>
+            </div>
+
+            <div class="control-section" id="timelineControls">
+                <h3>Timeline Ring Spacing (Radial)</h3>
+                <div class="section-help" style="margin-bottom: 12px;">
+                    Adjust the radius of individual year rings. Leave blank for auto-spacing.
+                </div>
+                <div id="yearRadiusControls"></div>
+                <button class="btn-secondary" onclick="resetYearRadii()" style="margin-top: 10px;">Reset to Auto</button>
             </div>
 
             <div class="control-section" id="fountainControls">
@@ -574,7 +597,15 @@
                 <div><strong>Total Models:</strong> <span id="totalModels">114</span></div>
                 <div><strong>Visible:</strong> <span id="visibleModels">-</span></div>
                 <div><strong>Families:</strong> <span id="totalFamilies">17</span></div>
-                <div style="margin-top: 8px; font-size: 10px; color: #999;">💡 In radial mode, drag timeline rings to adjust spacing</div>
+                <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                    <div style="font-size: 11px; font-weight: 600; color: #5a6c7d; margin-bottom: 6px;">⌨️ Keyboard Shortcuts</div>
+                    <div style="font-size: 10px; color: #6c757d; line-height: 1.4;">
+                        <strong>WASD</strong> - Pan canvas<br>
+                        <strong>Z / X</strong> - Zoom in / out<br>
+                        <strong>Arrow keys</strong> - Pan canvas
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 10px; color: #999;">💡 Drag timeline rings to adjust spacing</div>
             </div>
         </div>
 
@@ -598,13 +629,79 @@
         });
 
         initializeColorPalette();
+        initializeYearRadiusControls();
         setupEventListeners();
+        setupKeyboardControls();
         render();
 
         function setupEventListeners() {
             // Auto-redraw on any input change
             document.querySelectorAll('select, input[type="checkbox"], input[type="number"]').forEach(el => {
                 el.addEventListener('change', render);
+            });
+        }
+
+        function setupKeyboardControls() {
+            const panStep = 50; // pixels to pan per keypress
+            const zoomStep = 0.1; // zoom increment
+
+            document.addEventListener('keydown', function(event) {
+                // Don't trigger if user is typing in an input field
+                if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+                    return;
+                }
+
+                const key = event.key.toLowerCase();
+                const centerXInput = document.getElementById('centerXOffset');
+                const centerYInput = document.getElementById('centerYOffset');
+                const verticalSpreadInput = document.getElementById('verticalSpread');
+
+                let currentX = parseInt(centerXInput.value);
+                let currentY = parseInt(centerYInput.value);
+                let currentZoom = parseFloat(verticalSpreadInput.value);
+
+                switch(key) {
+                    case 'w':
+                    case 'arrowup':
+                        // Move up
+                        centerYInput.value = currentY + panStep;
+                        render();
+                        event.preventDefault();
+                        break;
+                    case 'a':
+                    case 'arrowleft':
+                        // Move left
+                        centerXInput.value = currentX + panStep;
+                        render();
+                        event.preventDefault();
+                        break;
+                    case 's':
+                    case 'arrowdown':
+                        // Move down
+                        centerYInput.value = currentY - panStep;
+                        render();
+                        event.preventDefault();
+                        break;
+                    case 'd':
+                    case 'arrowright':
+                        // Move right
+                        centerXInput.value = currentX - panStep;
+                        render();
+                        event.preventDefault();
+                        break;
+                    case 'x':
+                        // Zoom out
+                        verticalSpreadInput.value = Math.max(0.1, currentZoom - zoomStep).toFixed(1);
+                        render();
+                        event.preventDefault();
+                        break;
+                    case 'z':
+                        // Zoom in
+                        verticalSpreadInput.value = Math.min(5, currentZoom + zoomStep).toFixed(1);
+                        render();
+                        event.preventDefault();
+                        break;
+                }
             });
         }
 
@@ -1291,6 +1388,60 @@
         // Update family color and re-render
         function updateFamilyColor(familyKey, newColor) {
             familyColors[familyKey] = newColor;
+            render();
+        }
+
+        // Initialize year radius controls
+        function initializeYearRadiusControls() {
+            const container = document.getElementById('yearRadiusControls');
+            container.innerHTML = '';
+
+            // Get unique years from the data
+            const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
+
+            years.forEach(year => {
+                const item = document.createElement('div');
+                item.className = 'control-group';
+                item.style.marginBottom = '8px';
+
+                const currentRadius = yearRadii[year] || '';
+
+                item.innerHTML = `
+                    <label style="font-size: 11px;">${year}</label>
+                    <input type="number"
+                           class="year-radius-input"
+                           data-year="${year}"
+                           min="50"
+                           max="2000"
+                           step="10"
+                           placeholder="Auto"
+                           value="${currentRadius}"
+                           style="font-size: 12px; padding: 6px;">
+                `;
+                container.appendChild(item);
+            });
+
+            // Add event listeners to year radius inputs
+            document.querySelectorAll('.year-radius-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const year = parseInt(this.dataset.year);
+                    const value = parseFloat(this.value);
+
+                    if (this.value === '' || isNaN(value)) {
+                        // Remove custom radius if blank
+                        delete yearRadii[year];
+                    } else {
+                        yearRadii[year] = value;
+                    }
+                    render();
+                });
+            });
+        }
+
+        // Reset all year radii to auto
+        function resetYearRadii() {
+            yearRadii = {};
+            initializeYearRadiusControls();
             render();
         }
     </script>
