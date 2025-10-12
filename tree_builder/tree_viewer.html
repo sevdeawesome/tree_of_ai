@@ -705,7 +705,10 @@
                 fontWeight: document.getElementById('fontWeight').value,
                 textOpacity: parseFloat(document.getElementById('textOpacity').value),
                 textColor: document.getElementById('textColor').value,
-                useFamilyColors: document.getElementById('useFamilyColors').checked
+                useFamilyColors: document.getElementById('useFamilyColors').checked,
+                labelPositioning: document.getElementById('labelPositioning').value,
+                labelDistance: parseInt(document.getElementById('labelDistance').value),
+                radialTextRotation: document.getElementById('radialTextRotation').checked
             };
         }
 
@@ -1129,14 +1132,93 @@
 
         function drawLabels(svg, nodes, config) {
             const visibleNodes = nodes.filter(d => d.importance >= config.labelThreshold);
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+            const isRadial = config.layout === 'radial';
+
+            // Draw connector lines for extended positioning
+            if (isRadial && config.labelPositioning === 'extended') {
+                svg.selectAll('line.label-connector')
+                    .data(visibleNodes)
+                    .join('line')
+                    .attr('class', 'label-connector')
+                    .attr('x1', d => d.x)
+                    .attr('y1', d => d.y)
+                    .attr('x2', d => {
+                        const angle = d.angle || 0;
+                        const angleRad = (angle + config.startAngle) * Math.PI / 180;
+                        const distance = d.radius + config.labelDistance;
+                        return centerX + distance * Math.cos(angleRad);
+                    })
+                    .attr('y2', d => {
+                        const angle = d.angle || 0;
+                        const angleRad = (angle + config.startAngle) * Math.PI / 180;
+                        const distance = d.radius + config.labelDistance;
+                        return centerY + distance * Math.sin(angleRad);
+                    })
+                    .attr('stroke', d => {
+                        if (config.useFamilyColors) {
+                            return familyColors[d.family] || config.textColor;
+                        }
+                        return config.textColor;
+                    })
+                    .attr('stroke-width', 0.5)
+                    .attr('opacity', d => d.extinct ? config.textOpacity * 0.3 : config.textOpacity * 0.5);
+            }
 
             svg.selectAll('text.label')
                 .data(visibleNodes)
                 .join('text')
                 .attr('class', 'label')
-                .attr('x', d => d.x)
-                .attr('y', d => d.y + (d.children.length > 0 ? -12 : 15))
-                .attr('text-anchor', 'middle')
+                .attr('x', d => {
+                    if (isRadial && config.labelPositioning !== 'node') {
+                        // Calculate position on/beyond perimeter
+                        const angle = d.angle || 0;
+                        const angleRad = (angle + config.startAngle) * Math.PI / 180;
+                        const distance = d.radius + config.labelDistance;
+                        return centerX + distance * Math.cos(angleRad);
+                    }
+                    return d.x;
+                })
+                .attr('y', d => {
+                    if (isRadial && config.labelPositioning !== 'node') {
+                        const angle = d.angle || 0;
+                        const angleRad = (angle + config.startAngle) * Math.PI / 180;
+                        const distance = d.radius + config.labelDistance;
+                        return centerY + distance * Math.sin(angleRad);
+                    }
+                    return d.y + (d.children.length > 0 ? -12 : 15);
+                })
+                .attr('text-anchor', d => {
+                    if (isRadial && config.labelPositioning !== 'node' && config.radialTextRotation) {
+                        const angle = d.angle || 0;
+                        const totalAngle = angle + config.startAngle;
+                        // Flip text on left side for readability
+                        if (totalAngle > 90 && totalAngle < 270) {
+                            return 'end';
+                        }
+                        return 'start';
+                    }
+                    return 'middle';
+                })
+                .attr('transform', d => {
+                    if (isRadial && config.labelPositioning !== 'node' && config.radialTextRotation) {
+                        const angle = d.angle || 0;
+                        const totalAngle = angle + config.startAngle;
+                        const angleRad = totalAngle * Math.PI / 180;
+                        const distance = d.radius + config.labelDistance;
+                        const x = centerX + distance * Math.cos(angleRad);
+                        const y = centerY + distance * Math.sin(angleRad);
+
+                        // Rotate text, flip if on left side
+                        let rotation = totalAngle;
+                        if (totalAngle > 90 && totalAngle < 270) {
+                            rotation = totalAngle + 180;
+                        }
+                        return `rotate(${rotation}, ${x}, ${y})`;
+                    }
+                    return null;
+                })
                 .attr('font-family', config.fontFamily)
                 .attr('font-size', config.fontSize + 'px')
                 .attr('font-weight', config.fontWeight)
