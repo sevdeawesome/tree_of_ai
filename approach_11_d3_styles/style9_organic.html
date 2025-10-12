@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Evolution - Style 9: Organic Hand-Drawn</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Indie+Flower&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 50px;
+            background: linear-gradient(135deg, #fff8e7 0%, #f0e6d2 100%);
+            font-family: 'Architects Daughter', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        svg {
+            filter: url(#paper);
+        }
+
+        .branch {
+            fill: none;
+            stroke-linecap: round;
+            opacity: 0.75;
+            filter: url(#sketch);
+        }
+
+        .branch.extinct {
+            opacity: 0.3;
+            stroke-dasharray: 5,4;
+        }
+
+        .node circle {
+            stroke: rgba(60,40,30,0.4);
+            stroke-width: 2;
+            filter: url(#sketch);
+        }
+
+        .label {
+            font-size: 11px;
+            fill: #3c281e;
+            font-family: 'Indie Flower', cursive;
+            text-shadow: 0 0 1px rgba(255,255,255,0.7);
+        }
+
+        .label.important {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 48px;
+            fill: #3c281e;
+            text-anchor: middle;
+            font-family: 'Architects Daughter', cursive;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            fill: #8B7355;
+            text-anchor: middle;
+            font-family: 'Indie Flower', cursive;
+        }
+    </style>
+</head>
+<body>
+    <svg width="1700" height="1700">
+        <defs>
+            <filter id="paper">
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" result="noise" numOctaves="5" />
+                <feDiffuseLighting in="noise" lighting-color="#fff8e7" surfaceScale="1">
+                    <feDistantLight azimuth="45" elevation="60" />
+                </feDiffuseLighting>
+            </filter>
+            <filter id="sketch">
+                <feTurbulence baseFrequency="0.05" numOctaves="3" result="turbulence"/>
+                <feDisplacementMap xChannelSelector="R" yChannelSelector="G" in="SourceGraphic" in2="turbulence" scale="1.5" />
+            </filter>
+        </defs>
+    </svg>
+    <script>
+        const models = [{"name":"Perceptron","parent":null,"year":1958,"color":"#2F4F4F","importance":5,"extinct":false},{"name":"Symbolic AI","parent":"Perceptron","year":1960,"color":"#8B7355","importance":3,"extinct":true},{"name":"ELIZA","parent":"Symbolic AI","year":1966,"color":"#8B7355","importance":2,"extinct":true},{"name":"Expert Systems","parent":"Symbolic AI","year":1975,"color":"#8B7355","importance":2,"extinct":true},{"name":"Backpropagation","parent":"Perceptron","year":1986,"color":"#FF6347","importance":5,"extinct":false},{"name":"Neocognitron","parent":"Perceptron","year":1980,"color":"#DDA0DD","importance":2,"extinct":true},{"name":"CNNs","parent":"Backpropagation","year":1989,"color":"#9370DB","importance":4,"extinct":false},{"name":"LeNet-1","parent":"CNNs","year":1989,"color":"#9370DB","importance":2,"extinct":false},{"name":"LeNet-5","parent":"LeNet-1","year":1998,"color":"#9370DB","importance":3,"extinct":false},{"name":"AlexNet","parent":"LeNet-5","year":2012,"color":"#9370DB","importance":5,"extinct":false},{"name":"VGGNet","parent":"AlexNet","year":2014,"color":"#9370DB","importance":3,"extinct":false},{"name":"GoogLeNet","parent":"AlexNet","year":2014,"color":"#9370DB","importance":3,"extinct":false},{"name":"ResNet","parent":"AlexNet","year":2015,"color":"#9370DB","importance":5,"extinct":false},{"name":"EfficientNet","parent":"ResNet","year":2019,"color":"#9370DB","importance":3,"extinct":false},{"name":"RNNs","parent":"Backpropagation","year":1990,"color":"#4169E1","importance":3,"extinct":true},{"name":"LSTM","parent":"RNNs","year":1997,"color":"#4169E1","importance":4,"extinct":true},{"name":"GRU","parent":"LSTM","year":2014,"color":"#4169E1","importance":2,"extinct":true},{"name":"Seq2Seq","parent":"LSTM","year":2014,"color":"#4169E1","importance":3,"extinct":true},{"name":"Word2Vec","parent":"RNNs","year":2013,"color":"#87CEEB","importance":3,"extinct":false},{"name":"GloVe","parent":"Word2Vec","year":2014,"color":"#87CEEB","importance":2,"extinct":false},{"name":"GANs","parent":"Backpropagation","year":2014,"color":"#FFA500","importance":4,"extinct":true},{"name":"Progressive GAN","parent":"GANs","year":2017,"color":"#FFA500","importance":2,"extinct":true},{"name":"StyleGAN","parent":"Progressive GAN","year":2018,"color":"#FFA500","importance":3,"extinct":true},{"name":"StyleGAN2","parent":"StyleGAN","year":2019,"color":"#FFA500","importance":3,"extinct":true},{"name":"BigGAN","parent":"GANs","year":2018,"color":"#FFA500","importance":2,"extinct":true},{"name":"Q-Learning","parent":"Perceptron","year":1989,"color":"#228B22","importance":3,"extinct":false},{"name":"DQN","parent":"Q-Learning","year":2013,"color":"#228B22","importance":3,"extinct":false},{"name":"AlphaGo","parent":"DQN","year":2016,"color":"#228B22","importance":5,"extinct":false},{"name":"AlphaGo Zero","parent":"AlphaGo","year":2017,"color":"#228B22","importance":4,"extinct":false},{"name":"PPO","parent":"DQN","year":2017,"color":"#228B22","importance":3,"extinct":false},{"name":"RLHF","parent":"PPO","year":2020,"color":"#228B22","importance":4,"extinct":false},{"name":"Transformers","parent":"Backpropagation","year":2017,"color":"#00CED1","importance":5,"extinct":false},{"name":"BERT","parent":"Transformers","year":2018,"color":"#8B008B","importance":5,"extinct":false},{"name":"RoBERTa","parent":"BERT","year":2019,"color":"#8B008B","importance":3,"extinct":false},{"name":"ALBERT","parent":"BERT","year":2019,"color":"#8B008B","importance":2,"extinct":false},{"name":"DistilBERT","parent":"BERT","year":2019,"color":"#8B008B","importance":2,"extinct":false},{"name":"ELECTRA","parent":"BERT","year":2020,"color":"#8B008B","importance":2,"extinct":false},{"name":"ModernBERT","parent":"BERT","year":2024,"color":"#8B008B","importance":2,"extinct":false},{"name":"GPT","parent":"Transformers","year":2018,"color":"#00BFFF","importance":4,"extinct":false},{"name":"GPT-2","parent":"GPT","year":2019,"color":"#00BFFF","importance":4,"extinct":false},{"name":"GPT-3","parent":"GPT-2","year":2020,"color":"#00BFFF","importance":5,"extinct":false},{"name":"GPT-3.5","parent":"GPT-3","year":2022,"color":"#00BFFF","importance":4,"extinct":false},{"name":"ChatGPT","parent":"GPT-3.5","year":2022,"color":"#00BFFF","importance":5,"extinct":false},{"name":"GPT-4","parent":"ChatGPT","year":2023,"color":"#00BFFF","importance":5,"extinct":false},{"name":"GPT-4 Turbo","parent":"GPT-4","year":2023,"color":"#00BFFF","importance":3,"extinct":false},{"name":"GPT-4o","parent":"GPT-4 Turbo","year":2024,"color":"#00BFFF","importance":4,"extinct":false},{"name":"o1","parent":"GPT-4o","year":2024,"color":"#00BFFF","importance":5,"extinct":false},{"name":"Claude","parent":"Transformers","year":2023,"color":"#7B68EE","importance":4,"extinct":false},{"name":"Claude 2","parent":"Claude","year":2023,"color":"#7B68EE","importance":3,"extinct":false},{"name":"Claude 3 Haiku","parent":"Claude 2","year":2024,"color":"#7B68EE","importance":3,"extinct":false},{"name":"Claude 3 Sonnet","parent":"Claude 2","year":2024,"color":"#7B68EE","importance":4,"extinct":false},{"name":"Claude 3 Opus","parent":"Claude 2","year":2024,"color":"#7B68EE","importance":4,"extinct":false},{"name":"Claude 3.5 Sonnet","parent":"Claude 3 Sonnet","year":2024,"color":"#7B68EE","importance":5,"extinct":false},{"name":"Claude 4 Sonnet","parent":"Claude 3.5 Sonnet","year":2025,"color":"#7B68EE","importance":5,"extinct":false},{"name":"PaLM","parent":"Transformers","year":2022,"color":"#008B8B","importance":4,"extinct":false},{"name":"PaLM 2","parent":"PaLM","year":2023,"color":"#008B8B","importance":4,"extinct":false},{"name":"Gemini 1.0","parent":"PaLM 2","year":2023,"color":"#008B8B","importance":4,"extinct":false},{"name":"Gemini 1.5","parent":"Gemini 1.0","year":2024,"color":"#008B8B","importance":4,"extinct":false},{"name":"Gemini 2.0","parent":"Gemini 1.5","year":2024,"color":"#008B8B","importance":4,"extinct":false},{"name":"Gemini 2.5","parent":"Gemini 2.0","year":2025,"color":"#008B8B","importance":4,"extinct":false},{"name":"Gemma","parent":"PaLM","year":2024,"color":"#20B2AA","importance":3,"extinct":false},{"name":"Gemma 2","parent":"Gemma","year":2024,"color":"#20B2AA","importance":3,"extinct":false},{"name":"LLaMA","parent":"Transformers","year":2023,"color":"#FF4500","importance":5,"extinct":false},{"name":"LLaMA 2","parent":"LLaMA","year":2023,"color":"#FF4500","importance":4,"extinct":false},{"name":"LLaMA 3","parent":"LLaMA 2","year":2024,"color":"#FF4500","importance":5,"extinct":false},{"name":"LLaMA 3.1","parent":"LLaMA 3","year":2024,"color":"#FF4500","importance":4,"extinct":false},{"name":"LLaMA 3.2","parent":"LLaMA 3.1","year":2024,"color":"#FF4500","importance":3,"extinct":false},{"name":"LLaMA 4","parent":"LLaMA 3.2","year":2025,"color":"#FF4500","importance":4,"extinct":false},{"name":"Code Llama","parent":"LLaMA","year":2023,"color":"#FF6347","importance":3,"extinct":false},{"name":"Phi-1","parent":"Transformers","year":2023,"color":"#C0C0C0","importance":2,"extinct":false},{"name":"Phi-2","parent":"Phi-1","year":2023,"color":"#C0C0C0","importance":3,"extinct":false},{"name":"Phi-3","parent":"Phi-2","year":2024,"color":"#C0C0C0","importance":3,"extinct":false},{"name":"Phi-4","parent":"Phi-3","year":2025,"color":"#C0C0C0","importance":3,"extinct":false},{"name":"Command","parent":"Transformers","year":2023,"color":"#CD7F32","importance":3,"extinct":false},{"name":"Command R","parent":"Command","year":2024,"color":"#CD7F32","importance":3,"extinct":false},{"name":"Command R+","parent":"Command R","year":2024,"color":"#CD7F32","importance":3,"extinct":false},{"name":"T5","parent":"Transformers","year":2019,"color":"#9ACD32","importance":4,"extinct":false},{"name":"BART","parent":"Transformers","year":2019,"color":"#9ACD32","importance":3,"extinct":false},{"name":"FLAN-T5","parent":"T5","year":2022,"color":"#9ACD32","importance":3,"extinct":false},{"name":"CLIP","parent":"Transformers","year":2021,"color":"#DA70D6","importance":4,"extinct":false},{"name":"DALL-E","parent":"CLIP","year":2021,"color":"#DA70D6","importance":4,"extinct":false},{"name":"Flamingo","parent":"CLIP","year":2022,"color":"#DA70D6","importance":3,"extinct":false},{"name":"GPT-4V","parent":"GPT-4","year":2023,"color":"#DA70D6","importance":4,"extinct":false},{"name":"ViT","parent":"Transformers","year":2020,"color":"#BA55D3","importance":4,"extinct":false},{"name":"DeiT","parent":"ViT","year":2020,"color":"#BA55D3","importance":2,"extinct":false},{"name":"Swin Transformer","parent":"ViT","year":2021,"color":"#BA55D3","importance":3,"extinct":false},{"name":"BEiT","parent":"ViT","year":2021,"color":"#BA55D3","importance":2,"extinct":false},{"name":"DDPM","parent":"Backpropagation","year":2020,"color":"#FF1493","importance":4,"extinct":false},{"name":"DALL-E 2","parent":"DDPM","year":2022,"color":"#FF1493","importance":5,"extinct":false},{"name":"Stable Diffusion","parent":"DDPM","year":2022,"color":"#FF1493","importance":5,"extinct":false},{"name":"SD 2.x","parent":"Stable Diffusion","year":2022,"color":"#FF1493","importance":3,"extinct":false},{"name":"SDXL","parent":"SD 2.x","year":2023,"color":"#FF1493","importance":4,"extinct":false},{"name":"Midjourney","parent":"DDPM","year":2022,"color":"#FF69B4","importance":5,"extinct":false},{"name":"SD 3","parent":"SDXL","year":2024,"color":"#FF1493","importance":4,"extinct":false},{"name":"SD 3.5","parent":"SD 3","year":2024,"color":"#FF1493","importance":3,"extinct":false},{"name":"Imagen 3","parent":"DDPM","year":2024,"color":"#FF1493","importance":3,"extinct":false},{"name":"Qwen","parent":"Transformers","year":2023,"color":"#DC143C","importance":4,"extinct":false},{"name":"Qwen-2","parent":"Qwen","year":2024,"color":"#DC143C","importance":4,"extinct":false},{"name":"Qwen-2.5","parent":"Qwen-2","year":2024,"color":"#DC143C","importance":4,"extinct":false},{"name":"Qwen-2.5-Max","parent":"Qwen-2.5","year":2025,"color":"#DC143C","importance":4,"extinct":false},{"name":"ERNIE","parent":"Transformers","year":2019,"color":"#FFD700","importance":3,"extinct":false},{"name":"ERNIE 3.0","parent":"ERNIE","year":2021,"color":"#FFD700","importance":3,"extinct":false},{"name":"ERNIE Bot","parent":"ERNIE 3.0","year":2023,"color":"#FFD700","importance":3,"extinct":false},{"name":"ERNIE 4.0","parent":"ERNIE Bot","year":2023,"color":"#FFD700","importance":3,"extinct":false},{"name":"Doubao","parent":"Transformers","year":2024,"color":"#FF8C00","importance":3,"extinct":false},{"name":"Doubao-1.5-Pro","parent":"Doubao","year":2025,"color":"#FF8C00","importance":3,"extinct":false},{"name":"ChatGLM","parent":"Transformers","year":2023,"color":"#B22222","importance":3,"extinct":false},{"name":"GLM-4","parent":"ChatGLM","year":2024,"color":"#B22222","importance":3,"extinct":false},{"name":"Yi","parent":"Transformers","year":2023,"color":"#8B0000","importance":3,"extinct":false},{"name":"Yi-VL","parent":"Yi","year":2024,"color":"#8B0000","importance":3,"extinct":false},{"name":"DeepSeek","parent":"Transformers","year":2023,"color":"#800000","importance":4,"extinct":false},{"name":"DeepSeek-V2","parent":"DeepSeek","year":2024,"color":"#800000","importance":4,"extinct":false},{"name":"DeepSeek-R1","parent":"DeepSeek-V2","year":2025,"color":"#800000","importance":5,"extinct":false},{"name":"Kimi","parent":"Transformers","year":2023,"color":"#CD5C5C","importance":3,"extinct":false}];
+
+        const svg = d3.select("svg");
+        const w=1700, h=1700, cx=w/2, cy=h-180;
+        const rScale = d3.scaleLinear().domain([1958,2025]).range([35,600]);
+        
+        const nMap = new Map();
+        models.forEach(m => nMap.set(m.name, {...m, children:[]}));
+        models.forEach(m => { if(m.parent && nMap.has(m.parent)) nMap.get(m.parent).children.push(nMap.get(m.name)); });
+        
+        const root = nMap.get("Perceptron");
+        
+        function layout(n, aStart=-135, aEnd=-45) {
+            n.angle = (aStart+aEnd)/2;
+            n.radius = rScale(n.year);
+            if(n.children.length>0) {
+                const range = aEnd-aStart;
+                const step = range/n.children.length;
+                n.children.forEach((c,i) => layout(c, aStart+i*step, aStart+(i+1)*step));
+            }
+        }
+        layout(root);
+        
+        function cart(r,a) {
+            const rad = a*Math.PI/180;
+            return {x: cx+r*Math.cos(rad), y: cy+r*Math.sin(rad)};
+        }
+        
+        const all = [];
+        function coll(n) {
+            const p = cart(n.radius, n.angle);
+            n.x=p.x; n.y=p.y;
+            all.push(n);
+            n.children.forEach(coll);
+        }
+        coll(root);
+        
+        all.forEach(n => {
+            n.children.forEach(c => {
+                const midR = (n.radius+c.radius)/2;
+                const midA = (n.angle+c.angle)/2;
+                const cp = cart(midR, midA);
+                const path = d3.path();
+                path.moveTo(n.x,n.y);
+                path.quadraticCurveTo(cp.x,cp.y,c.x,c.y);
+                svg.append("path").attr("class",c.extinct?"branch extinct":"branch")
+                    .attr("d",path).attr("stroke",c.color).attr("stroke-width",c.importance*1.6);
+            });
+        });
+        
+        const nodes = svg.selectAll("g.node").data(all).join("g")
+            .attr("class","node").attr("transform",d=>`translate(${d.x},${d.y})`);
+        
+        nodes.append("circle").attr("r",d=>d.importance*1.8+1.5).attr("fill",d=>d.color);
+        
+        nodes.filter(d=>d.importance>=4||d.children.length===0).append("text")
+            .attr("class",d=>d.importance>=5?"label important":"label")
+            .attr("y",d=>d.children.length>0?-12:12)
+            .attr("text-anchor","middle").text(d=>d.name);
+        
+        svg.append("text").attr("class","title").attr("x",w/2).attr("y",70)
+            .text("The Tree of AI");
+        svg.append("text").attr("class","subtitle").attr("x",w/2).attr("y",100)
+            .text("Hand-Drawn Organic Style • 1958—2025");
+    </script>
+</body>
+</html>

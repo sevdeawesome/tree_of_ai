@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Phylogenetic Tree - Interactive Viewer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            height: 100vh;
+        }
+
+        #controls {
+            width: 320px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+        }
+
+        #canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        svg {
+            display: block;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .control-section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #5a6c7d;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+
+        select, input[type="range"], input[type="number"], input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+        }
+
+        .range-value {
+            display: inline-block;
+            font-size: 11px;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        .branch {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: opacity 0.3s;
+        }
+
+        .branch.extinct {
+            stroke-dasharray: 4,3;
+        }
+
+        .node circle {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .node circle:hover {
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .label {
+            pointer-events: none;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .timeline-line {
+            stroke: #dee2e6;
+            stroke-width: 1;
+            opacity: 0.5;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            fill: #6c757d;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .title-text {
+            font-family: 'Crimson Text', serif;
+            fill: #2c3e50;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 12px;
+        }
+
+        .stats div {
+            margin: 4px 0;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            max-width: 250px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="controls">
+            <h1>🌳 AI Tree Viewer</h1>
+
+            <div class="control-section">
+                <h3>Layout</h3>
+                <div class="control-group">
+                    <label>Algorithm</label>
+                    <select id="layoutAlgorithm">
+                        <option value="fountain">Fountain Explosion</option>
+                        <option value="vertical">Vertical Dendrogram</option>
+                        <option value="horizontal">Horizontal Tree</option>
+                        <option value="radial">Radial (Semicircle)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Dimensions</h3>
+                <div class="control-group">
+                    <label>Canvas Width <span class="range-value" id="widthValue">2400px</span></label>
+                    <input type="range" id="canvasWidth" min="1200" max="4800" step="100" value="2400">
+                </div>
+                <div class="control-group">
+                    <label>Canvas Height <span class="range-value" id="heightValue">2000px</span></label>
+                    <input type="range" id="canvasHeight" min="1000" max="4000" step="100" value="2000">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Fountain Layout</h3>
+                <div class="control-group">
+                    <label>Width Expansion <span class="range-value" id="expansionValue">10x</span></label>
+                    <input type="range" id="widthExpansion" min="2" max="20" step="1" value="10">
+                </div>
+                <div class="control-group">
+                    <label>Curve Strength <span class="range-value" id="curveValue">0.5</span></label>
+                    <input type="range" id="curveStrength" min="0" max="1" step="0.1" value="0.5">
+                </div>
+                <div class="control-group">
+                    <label>Branch Spacing <span class="range-value" id="spacingValue">1.0</span></label>
+                    <input type="range" id="branchSpacing" min="0.5" max="2" step="0.1" value="1.0">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Visual Style</h3>
+                <div class="control-group">
+                    <label>Branch Opacity <span class="range-value" id="opacityValue">0.75</span></label>
+                    <input type="range" id="branchOpacity" min="0.1" max="1" step="0.05" value="0.75">
+                </div>
+                <div class="control-group">
+                    <label>Line Thickness Multiplier <span class="range-value" id="thicknessValue">1.5</span></label>
+                    <input type="range" id="lineThickness" min="0.5" max="3" step="0.1" value="1.5">
+                </div>
+                <div class="control-group">
+                    <label>Node Size <span class="range-value" id="nodeSizeValue">1.5</span></label>
+                    <input type="range" id="nodeSize" min="0.5" max="3" step="0.1" value="1.5">
+                </div>
+                <div class="control-group">
+                    <label>Font Size <span class="range-value" id="fontSizeValue">10px</span></label>
+                    <input type="range" id="fontSize" min="6" max="16" step="1" value="10">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Filters</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showExtinct" checked>
+                    <label>Show Extinct Models</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showLabels" checked>
+                    <label>Show Labels</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showTimeline" checked>
+                    <label>Show Timeline</label>
+                </div>
+                <div class="control-group">
+                    <label>Label Threshold (importance)</label>
+                    <input type="range" id="labelThreshold" min="1" max="5" step="1" value="4">
+                    <span class="range-value" id="labelThresholdValue">4+</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Actions</h3>
+                <button class="btn-primary" onclick="render()">🔄 Redraw</button>
+                <button class="btn-secondary" onclick="resetSettings()">↺ Reset Settings</button>
+                <button class="btn-secondary" onclick="exportSVG()">💾 Export SVG</button>
+                <button class="btn-secondary" onclick="exportPNG()">📷 Export PNG</button>
+            </div>
+
+            <div class="stats">
+                <div><strong>Total Models:</strong> <span id="totalModels">-</span></div>
+                <div><strong>Visible:</strong> <span id="visibleModels">-</span></div>
+                <div><strong>Families:</strong> <span id="totalFamilies">-</span></div>
+            </div>
+        </div>
+
+        <div id="canvas">
+            <div id="loading">Loading data...</div>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        let data = null;
+        let currentConfig = {};
+
+        // Load data
+        fetch('ai_tree_data.json')
+            .then(response => response.json())
+            .then(json => {
+                data = json;
+                document.getElementById('loading').style.display = 'none';
+                updateStats();
+                setupEventListeners();
+                render();
+            })
+            .catch(error => {
+                document.getElementById('loading').textContent = 'Error loading data: ' + error;
+                console.error(error);
+            });
+
+        function setupEventListeners() {
+            // Update range value displays
+            const ranges = {
+                'canvasWidth': 'widthValue',
+                'canvasHeight': 'heightValue',
+                'widthExpansion': 'expansionValue',
+                'curveStrength': 'curveValue',
+                'branchSpacing': 'spacingValue',
+                'branchOpacity': 'opacityValue',
+                'lineThickness': 'thicknessValue',
+                'nodeSize': 'nodeSizeValue',
+                'fontSize': 'fontSizeValue',
+                'labelThreshold': 'labelThresholdValue'
+            };
+
+            Object.entries(ranges).forEach(([inputId, displayId]) => {
+                const input = document.getElementById(inputId);
+                const display = document.getElementById(displayId);
+                input.addEventListener('input', () => {
+                    let value = input.value;
+                    if (inputId === 'widthExpansion') value += 'x';
+                    else if (inputId.includes('canvas')) value += 'px';
+                    else if (inputId === 'labelThreshold') value += '+';
+                    else if (inputId === 'fontSize') value += 'px';
+                    display.textContent = value;
+                });
+            });
+
+            // Auto-redraw on control changes
+            document.querySelectorAll('select, input[type="checkbox"]').forEach(el => {
+                el.addEventListener('change', render);
+            });
+        }
+
+        function getConfig() {
+            return {
+                layout: document.getElementById('layoutAlgorithm').value,
+                width: parseInt(document.getElementById('canvasWidth').value),
+                height: parseInt(document.getElementById('canvasHeight').value),
+                expansion: parseFloat(document.getElementById('widthExpansion').value),
+                curveStrength: parseFloat(document.getElementById('curveStrength').value),
+                spacing: parseFloat(document.getElementById('branchSpacing').value),
+                branchOpacity: parseFloat(document.getElementById('branchOpacity').value),
+                lineThickness: parseFloat(document.getElementById('lineThickness').value),
+                nodeSize: parseFloat(document.getElementById('nodeSize').value),
+                fontSize: parseInt(document.getElementById('fontSize').value),
+                showExtinct: document.getElementById('showExtinct').checked,
+                showLabels: document.getElementById('showLabels').checked,
+                showTimeline: document.getElementById('showTimeline').checked,
+                labelThreshold: parseInt(document.getElementById('labelThreshold').value)
+            };
+        }
+
+        function render() {
+            if (!data) return;
+
+            currentConfig = getConfig();
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '<div class="tooltip" id="tooltip"></div>';
+
+            const svg = d3.select('#canvas')
+                .append('svg')
+                .attr('width', currentConfig.width)
+                .attr('height', currentConfig.height);
+
+            // Build tree structure
+            const nodeMap = new Map();
+            data.models.forEach(m => {
+                nodeMap.set(m.id, {...m, children: []});
+            });
+
+            data.models.forEach(m => {
+                m.parents.forEach(parentId => {
+                    if (nodeMap.has(parentId)) {
+                        nodeMap.get(parentId).children.push(nodeMap.get(m.id));
+                    }
+                });
+            });
+
+            // Find roots (nodes with no parents)
+            const roots = data.models.filter(m => m.parents.length === 0).map(m => nodeMap.get(m.id));
+
+            // Apply layout
+            if (currentConfig.layout === 'fountain') {
+                layoutFountain(roots[0], currentConfig);
+            } else if (currentConfig.layout === 'vertical') {
+                layoutVertical(roots[0], currentConfig);
+            } else if (currentConfig.layout === 'horizontal') {
+                layoutHorizontal(roots[0], currentConfig);
+            } else if (currentConfig.layout === 'radial') {
+                layoutRadial(roots[0], currentConfig);
+            }
+
+            // Collect all nodes
+            const allNodes = [];
+            function collect(node) {
+                if (!node) return;
+                allNodes.push(node);
+                node.children.forEach(collect);
+            }
+            roots.forEach(collect);
+
+            // Filter nodes
+            const visibleNodes = currentConfig.showExtinct
+                ? allNodes
+                : allNodes.filter(n => !n.extinct);
+
+            // Draw timeline
+            if (currentConfig.showTimeline) {
+                drawTimeline(svg, currentConfig);
+            }
+
+            // Draw branches
+            drawBranches(svg, visibleNodes, currentConfig);
+
+            // Draw nodes
+            drawNodes(svg, visibleNodes, currentConfig);
+
+            // Draw labels
+            if (currentConfig.showLabels) {
+                drawLabels(svg, visibleNodes, currentConfig);
+            }
+
+            // Update stats
+            document.getElementById('visibleModels').textContent = visibleNodes.length;
+        }
+
+        function layoutFountain(root, config) {
+            const yScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([config.height - 100, 150]);
+
+            const widthScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([200, 200 * config.expansion]);
+
+            function layout(node, xMin, xMax) {
+                node.y = yScale(node.year);
+                const currentWidth = widthScale(node.year) * config.spacing;
+                const halfWidth = currentWidth / 2;
+
+                if (node.children.length === 0) {
+                    node.x = config.width / 2 + (xMin + xMax) / 2;
+                } else {
+                    const totalDescendants = node.children.reduce((sum, c) => sum + countDescendants(c), 0);
+                    let currentPos = xMin;
+
+                    node.children.forEach(child => {
+                        const childDescendants = countDescendants(child);
+                        const childWidth = (childDescendants / totalDescendants) * (xMax - xMin);
+                        layout(child, currentPos, currentPos + childWidth);
+                        currentPos += childWidth;
+                    });
+
+                    node.x = config.width / 2 + d3.mean(node.children, d => d.x - config.width / 2);
+                }
+            }
+
+            layout(root, -1000, 1000);
+        }
+
+        function layoutVertical(root, config) {
+            // Simple vertical dendrogram
+            const yScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([config.height - 100, 100]);
+
+            function layout(node, xMin, xMax) {
+                node.y = yScale(node.year);
+                if (node.children.length === 0) {
+                    node.x = (xMin + xMax) / 2;
+                } else {
+                    const step = (xMax - xMin) / node.children.length;
+                    node.children.forEach((c, i) => {
+                        layout(c, xMin + i * step, xMin + (i + 1) * step);
+                    });
+                    node.x = d3.mean(node.children, d => d.x);
+                }
+            }
+
+            layout(root, 100, config.width - 100);
+        }
+
+        function layoutHorizontal(root, config) {
+            // Horizontal tree layout
+            const xScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([100, config.width - 100]);
+
+            function layout(node, yMin, yMax) {
+                node.x = xScale(node.year);
+                if (node.children.length === 0) {
+                    node.y = (yMin + yMax) / 2;
+                } else {
+                    const step = (yMax - yMin) / node.children.length;
+                    node.children.forEach((c, i) => {
+                        layout(c, yMin + i * step, yMin + (i + 1) * step);
+                    });
+                    node.y = d3.mean(node.children, d => d.y);
+                }
+            }
+
+            layout(root, 100, config.height - 100);
+        }
+
+        function layoutRadial(root, config) {
+            // Radial semicircle layout
+            const radiusScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([50, Math.min(config.width, config.height) / 2 - 100]);
+
+            function layout(node, angleStart = -135, angleEnd = -45) {
+                node.angle = (angleStart + angleEnd) / 2;
+                node.radius = radiusScale(node.year);
+
+                if (node.children.length > 0) {
+                    const range = angleEnd - angleStart;
+                    const step = range / node.children.length;
+                    node.children.forEach((c, i) => {
+                        layout(c, angleStart + i * step, angleStart + (i + 1) * step);
+                    });
+                }
+            }
+
+            layout(root);
+
+            // Convert to cartesian
+            function toCartesian(node) {
+                const rad = node.angle * Math.PI / 180;
+                node.x = config.width / 2 + node.radius * Math.cos(rad);
+                node.y = config.height - 200 + node.radius * Math.sin(rad);
+                node.children.forEach(toCartesian);
+            }
+
+            toCartesian(root);
+        }
+
+        function countDescendants(node) {
+            if (node.children.length === 0) return 1;
+            return node.children.reduce((sum, c) => sum + countDescendants(c), 0);
+        }
+
+        function drawTimeline(svg, config) {
+            const years = [1960, 1970, 1980, 1990, 2000, 2010, 2020, 2025];
+            const yScale = d3.scaleLinear()
+                .domain([1958, 2025])
+                .range([config.height - 100, 150]);
+
+            svg.selectAll('line.timeline')
+                .data(years)
+                .join('line')
+                .attr('class', 'timeline-line')
+                .attr('x1', 100)
+                .attr('x2', config.width - 100)
+                .attr('y1', d => yScale(d))
+                .attr('y2', d => yScale(d));
+
+            svg.selectAll('text.timeline')
+                .data(years)
+                .join('text')
+                .attr('class', 'timeline-label')
+                .attr('x', 60)
+                .attr('y', d => yScale(d) + 4)
+                .text(d => d);
+        }
+
+        function drawBranches(svg, nodes, config) {
+            nodes.forEach(node => {
+                node.children.forEach(child => {
+                    if (!config.showExtinct && child.extinct) return;
+
+                    const path = d3.path();
+                    path.moveTo(node.x, node.y);
+
+                    // Sweeping curve
+                    const dx = child.x - node.x;
+                    const dy = child.y - node.y;
+                    const strength = config.curveStrength;
+
+                    const cp1x = node.x + dx * (0.3 * strength);
+                    const cp1y = node.y + dy * (0.2 * strength);
+                    const cp2x = node.x + dx * (0.7 + 0.3 * (1 - strength));
+                    const cp2y = node.y + dy * (0.8 + 0.2 * (1 - strength));
+
+                    path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, child.x, child.y);
+
+                    const familyData = data.families[child.family];
+                    svg.append('path')
+                        .attr('class', child.extinct ? 'branch extinct' : 'branch')
+                        .attr('d', path.toString())
+                        .attr('stroke', familyData.color)
+                        .attr('stroke-width', child.importance * config.lineThickness)
+                        .attr('opacity', child.extinct ? config.branchOpacity * 0.3 : config.branchOpacity);
+                });
+            });
+        }
+
+        function drawNodes(svg, nodes, config) {
+            const nodeGroups = svg.selectAll('g.node')
+                .data(nodes)
+                .join('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+
+            nodeGroups.append('circle')
+                .attr('r', d => d.importance * config.nodeSize + 1.5)
+                .attr('fill', d => data.families[d.family].color)
+                .attr('opacity', d => d.extinct ? 0.3 : 0.9)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 1.5)
+                .on('mouseover', function(event, d) {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.innerHTML = `
+                        <strong>${d.name}</strong><br>
+                        ${d.year}<br>
+                        ${data.families[d.family].label}<br>
+                        Importance: ${"⭐".repeat(d.importance)}<br>
+                        ${d.extinct ? '💀 Extinct' : '✨ Active'}
+                    `;
+                    tooltip.style.left = (event.pageX + 10) + 'px';
+                    tooltip.style.top = (event.pageY - 10) + 'px';
+                    tooltip.style.opacity = 1;
+                })
+                .on('mouseout', function() {
+                    document.getElementById('tooltip').style.opacity = 0;
+                });
+        }
+
+        function drawLabels(svg, nodes, config) {
+            const visibleNodes = nodes.filter(d =>
+                d.importance >= config.labelThreshold || d.children.length === 0
+            );
+
+            svg.selectAll('text.label')
+                .data(visibleNodes)
+                .join('text')
+                .attr('class', 'label')
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + (d.children.length > 0 ? -10 : 12))
+                .attr('text-anchor', 'middle')
+                .attr('font-size', config.fontSize + 'px')
+                .attr('font-weight', d => d.importance >= 5 ? 600 : 400)
+                .attr('opacity', d => d.extinct ? 0.4 : 1)
+                .text(d => d.name);
+        }
+
+        function updateStats() {
+            document.getElementById('totalModels').textContent = data.models.length;
+            document.getElementById('totalFamilies').textContent = Object.keys(data.families).length;
+        }
+
+        function resetSettings() {
+            document.getElementById('canvasWidth').value = 2400;
+            document.getElementById('canvasHeight').value = 2000;
+            document.getElementById('widthExpansion').value = 10;
+            document.getElementById('curveStrength').value = 0.5;
+            document.getElementById('branchSpacing').value = 1.0;
+            document.getElementById('branchOpacity').value = 0.75;
+            document.getElementById('lineThickness').value = 1.5;
+            document.getElementById('nodeSize').value = 1.5;
+            document.getElementById('fontSize').value = 10;
+            document.getElementById('labelThreshold').value = 4;
+            document.getElementById('showExtinct').checked = true;
+            document.getElementById('showLabels').checked = true;
+            document.getElementById('showTimeline').checked = true;
+            render();
+        }
+
+        function exportSVG() {
+            const svg = document.querySelector('#canvas svg');
+            if (!svg) return;
+
+            const svgData = svg.outerHTML;
+            const blob = new Blob([svgData], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ai_phylogenetic_tree.svg';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPNG() {
+            const svg = document.querySelector('#canvas svg');
+            if (!svg) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = currentConfig.width * 2;
+            canvas.height = currentConfig.height * 2;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            const blob = new Blob([svgData], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'ai_phylogenetic_tree.png';
+                    link.click();
+                });
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+    </script>
+</body>
+</html>

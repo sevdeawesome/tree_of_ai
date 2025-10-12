@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Phylogenetic Tree of AI Evolution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #FDFEFE 0%, #F8F9F9 100%);
+            overflow-x: hidden;
+        }
+
+        #tree-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: radial-gradient(circle at center, #FFFFFF 0%, #F8F9F9 100%);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1C2833;
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #515A5A;
+            font-size: 1.2em;
+            font-weight: normal;
+            font-style: italic;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .branch {
+            fill: none;
+            stroke-linecap: round;
+            opacity: 0.75;
+            transition: opacity 0.3s, stroke-width 0.3s;
+        }
+
+        .branch.extinct {
+            opacity: 0.3;
+        }
+
+        .branch:hover {
+            opacity: 0.95;
+            stroke-width: 6px !important;
+        }
+
+        .node circle {
+            transition: r 0.3s, opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .node:hover circle {
+            r: 12;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
+
+        .node text {
+            font-family: 'Georgia', serif;
+            font-size: 11px;
+            pointer-events: none;
+            fill: #1A1A1A;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.9),
+                         0 0 6px rgba(255, 255, 255, 0.7);
+        }
+
+        .node.important text {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .timeline-ring {
+            fill: none;
+            stroke: #D5D8DC;
+            stroke-width: 1;
+            opacity: 0.3;
+        }
+
+        .timeline-label {
+            font-size: 10px;
+            fill: #7F8C8D;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #BDC3C7;
+            border-radius: 8px;
+            pointer-events: none;
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+        }
+
+        .tooltip h3 {
+            margin: 0 0 8px 0;
+            color: #1C2833;
+            font-size: 16px;
+        }
+
+        .tooltip p {
+            margin: 4px 0;
+            color: #515A5A;
+        }
+
+        .legend {
+            position: absolute;
+            top: 80px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #D5D8DC;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1C2833;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 11px;
+            color: #515A5A;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+
+        .controls {
+            position: absolute;
+            top: 80px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #D5D8DC;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px 15px;
+            background: #5DADE2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .control-button:hover {
+            background: #3498DB;
+        }
+    </style>
+</head>
+<body>
+    <h1>The Phylogenetic Tree of Artificial Intelligence</h1>
+    <h2>Evolution from Perceptrons to AGI • 1958—2025</h2>
+
+    <div class="controls">
+        <div class="legend-title">Controls</div>
+        <button class="control-button" onclick="resetZoom()">Reset View</button>
+        <button class="control-button" onclick="highlightImportant()">Highlight Key Models</button>
+        <button class="control-button" onclick="toggleExtinct()">Toggle Extinct Branches</button>
+    </div>
+
+    <div class="legend">
+        <div class="legend-title">AI Families</div>
+        <div class="legend-item"><div class="legend-color" style="background: #9370DB"></div> CNNs</div>
+        <div class="legend-item"><div class="legend-color" style="background: #00CED1"></div> Transformers</div>
+        <div class="legend-item"><div class="legend-color" style="background: #00BFFF"></div> GPT (OpenAI)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #7B68EE"></div> Claude (Anthropic)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #FF4500"></div> LLaMA (Meta)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #008B8B"></div> Gemini (Google)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #FF1493"></div> Diffusion Models</div>
+        <div class="legend-item"><div class="legend-color" style="background: #DC143C"></div> Chinese AI</div>
+        <div class="legend-item"><div class="legend-color" style="background: #228B22"></div> Reinforcement Learning</div>
+    </div>
+
+    <div id="tree-container"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // AI Models dataset (simplified version for demo)
+        const aiModels = {
+            name: "Perceptron",
+            year: 1958,
+            importance: 5,
+            color: "#2F4F4F",
+            extinct: false,
+            children: [
+                {
+                    name: "Symbolic AI",
+                    year: 1960,
+                    importance: 2,
+                    color: "#8B7355",
+                    extinct: true,
+                    children: []
+                },
+                {
+                    name: "Backpropagation",
+                    year: 1986,
+                    importance: 5,
+                    color: "#FF6347",
+                    extinct: false,
+                    children: [
+                        {
+                            name: "CNNs",
+                            year: 1989,
+                            importance: 4,
+                            color: "#9370DB",
+                            extinct: false,
+                            children: [
+                                { name: "LeNet-5", year: 1998, importance: 3, color: "#9370DB", extinct: false, children: [] },
+                                { name: "AlexNet", year: 2012, importance: 5, color: "#9370DB", extinct: false, children: [
+                                    { name: "VGGNet", year: 2014, importance: 3, color: "#9370DB", extinct: false, children: [] },
+                                    { name: "ResNet", year: 2015, importance: 5, color: "#9370DB", extinct: false, children: [] }
+                                ]},
+                            ]
+                        },
+                        {
+                            name: "RNNs",
+                            year: 1990,
+                            importance: 3,
+                            color: "#4169E1",
+                            extinct: true,
+                            children: [
+                                { name: "LSTM", year: 1997, importance: 4, color: "#4169E1", extinct: true, children: [
+                                    { name: "Seq2Seq", year: 2014, importance: 3, color: "#4169E1", extinct: true, children: [] }
+                                ]},
+                            ]
+                        },
+                        {
+                            name: "GANs",
+                            year: 2014,
+                            importance: 4,
+                            color: "#FFA500",
+                            extinct: true,
+                            children: [
+                                { name: "StyleGAN", year: 2018, importance: 3, color: "#FFA500", extinct: true, children: [] }
+                            ]
+                        },
+                        {
+                            name: "Transformers",
+                            year: 2017,
+                            importance: 5,
+                            color: "#00CED1",
+                            extinct: false,
+                            children: [
+                                {
+                                    name: "BERT",
+                                    year: 2018,
+                                    importance: 5,
+                                    color: "#8B008B",
+                                    extinct: false,
+                                    children: [
+                                        { name: "RoBERTa", year: 2019, importance: 3, color: "#8B008B", extinct: false, children: [] }
+                                    ]
+                                },
+                                {
+                                    name: "GPT",
+                                    year: 2018,
+                                    importance: 4,
+                                    color: "#00BFFF",
+                                    extinct: false,
+                                    children: [
+                                        { name: "GPT-2", year: 2019, importance: 4, color: "#00BFFF", extinct: false, children: [] },
+                                        {
+                                            name: "GPT-3",
+                                            year: 2020,
+                                            importance: 5,
+                                            color: "#00BFFF",
+                                            extinct: false,
+                                            children: [
+                                                {
+                                                    name: "ChatGPT",
+                                                    year: 2022,
+                                                    importance: 5,
+                                                    color: "#00BFFF",
+                                                    extinct: false,
+                                                    children: [
+                                                        { name: "GPT-4", year: 2023, importance: 5, color: "#00BFFF", extinct: false, children: [
+                                                            { name: "GPT-4o", year: 2024, importance: 4, color: "#00BFFF", extinct: false, children: [] }
+                                                        ]}
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: "Claude",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#7B68EE",
+                                    extinct: false,
+                                    children: [
+                                        { name: "Claude 3", year: 2024, importance: 4, color: "#7B68EE", extinct: false, children: [
+                                            { name: "Claude 3.5 Sonnet", year: 2024, importance: 5, color: "#7B68EE", extinct: false, children: [] }
+                                        ]}
+                                    ]
+                                },
+                                {
+                                    name: "LLaMA",
+                                    year: 2023,
+                                    importance: 5,
+                                    color: "#FF4500",
+                                    extinct: false,
+                                    children: [
+                                        { name: "LLaMA 2", year: 2023, importance: 4, color: "#FF4500", extinct: false, children: [
+                                            { name: "LLaMA 3", year: 2024, importance: 5, color: "#FF4500", extinct: false, children: [] }
+                                        ]}
+                                    ]
+                                },
+                                {
+                                    name: "Gemini",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#008B8B",
+                                    extinct: false,
+                                    children: [
+                                        { name: "Gemini 1.5", year: 2024, importance: 4, color: "#008B8B", extinct: false, children: [] }
+                                    ]
+                                },
+                                {
+                                    name: "Qwen",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#DC143C",
+                                    extinct: false,
+                                    children: [
+                                        { name: "Qwen-2.5", year: 2024, importance: 4, color: "#DC143C", extinct: false, children: [] }
+                                    ]
+                                },
+                                {
+                                    name: "DeepSeek",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#800000",
+                                    extinct: false,
+                                    children: [
+                                        { name: "DeepSeek-R1", year: 2025, importance: 5, color: "#800000", extinct: false, children: [] }
+                                    ]
+                                },
+                                { name: "ViT", year: 2020, importance: 4, color: "#BA55D3", extinct: false, children: [] }
+                            ]
+                        },
+                        {
+                            name: "Diffusion",
+                            year: 2020,
+                            importance: 4,
+                            color: "#FF1493",
+                            extinct: false,
+                            children: [
+                                { name: "DALL-E 2", year: 2022, importance: 5, color: "#FF1493", extinct: false, children: [] },
+                                { name: "Stable Diffusion", year: 2022, importance: 5, color: "#FF1493", extinct: false, children: [
+                                    { name: "SDXL", year: 2023, importance: 4, color: "#FF1493", extinct: false, children: [] }
+                                ]},
+                                { name: "Midjourney", year: 2022, importance: 5, color: "#FF69B4", extinct: false, children: [] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Q-Learning",
+                    year: 1989,
+                    importance: 3,
+                    color: "#228B22",
+                    extinct: false,
+                    children: [
+                        { name: "DQN", year: 2013, importance: 3, color: "#228B22", extinct: false, children: [
+                            { name: "AlphaGo", year: 2016, importance: 5, color: "#228B22", extinct: false, children: [] }
+                        ]}
+                    ]
+                }
+            ]
+        };
+
+        // Setup
+        const container = d3.select("#tree-container");
+        const width = window.innerWidth - 40;
+        const height = window.innerHeight - 150;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        const svg = container.append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const g = svg.append("g");
+
+        // Zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 5])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Radial tree layout
+        const tree = d3.tree()
+            .size([2 * Math.PI, Math.min(width, height) / 2 - 100])
+            .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+
+        const root = d3.hierarchy(aiModels);
+        tree(root);
+
+        // Draw timeline rings
+        const years = [1960, 1970, 1980, 1990, 2000, 2010, 2020, 2025];
+        years.forEach(year => {
+            const radius = ((year - 1958) / (2026 - 1958)) * (Math.min(width, height) / 2 - 100);
+            g.append("circle")
+                .attr("class", "timeline-ring")
+                .attr("cx", centerX)
+                .attr("cy", centerY)
+                .attr("r", radius);
+
+            g.append("text")
+                .attr("class", "timeline-label")
+                .attr("x", centerX)
+                .attr("y", centerY - radius - 5)
+                .attr("text-anchor", "middle")
+                .text(year);
+        });
+
+        // Function to project node positions
+        function project(x, y) {
+            const angle = (x - Math.PI / 2);
+            return [
+                centerX + y * Math.cos(angle),
+                centerY + y * Math.sin(angle)
+            ];
+        }
+
+        // Draw links with curves
+        const link = g.selectAll(".branch")
+            .data(root.links())
+            .enter().append("path")
+            .attr("class", d => `branch ${d.target.data.extinct ? 'extinct' : ''}`)
+            .attr("d", d3.linkRadial()
+                .angle(d => d.x)
+                .radius(d => d.y))
+            .attr("transform", `translate(${centerX},${centerY})`)
+            .attr("stroke", d => d.target.data.color)
+            .attr("stroke-width", d => d.target.data.importance * 2);
+
+        // Draw nodes
+        const node = g.selectAll(".node")
+            .data(root.descendants())
+            .enter().append("g")
+            .attr("class", d => `node ${d.data.importance >= 5 ? 'important' : ''}`)
+            .attr("transform", d => {
+                const [x, y] = project(d.x, d.y);
+                return `translate(${x},${y})`;
+            });
+
+        // Node circles
+        node.append("circle")
+            .attr("r", d => d.data.importance * 1.5)
+            .attr("fill", d => d.data.color)
+            .attr("stroke", "white")
+            .attr("stroke-width", 2)
+            .attr("opacity", d => d.data.extinct ? 0.4 : 0.9)
+            .on("mouseover", function(event, d) {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("display", "block")
+                    .html(`
+                        <h3>${d.data.name}</h3>
+                        <p><strong>Year:</strong> ${d.data.year}</p>
+                        <p><strong>Importance:</strong> ${d.data.importance}/5</p>
+                        <p><strong>Status:</strong> ${d.data.extinct ? 'Deprecated' : 'Active'}</p>
+                    `)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+            })
+            .on("mouseout", function() {
+                d3.select("#tooltip").style("display", "none");
+            });
+
+        // Node labels (only for important ones)
+        node.filter(d => d.data.importance >= 4)
+            .append("text")
+            .attr("dy", "0.31em")
+            .attr("x", d => d.x < Math.PI ? 15 : -15)
+            .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")
+            .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+            .text(d => d.data.name);
+
+        // Control functions
+        function resetZoom() {
+            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+        }
+
+        function highlightImportant() {
+            node.selectAll("circle")
+                .transition()
+                .duration(500)
+                .attr("r", d => d.data.importance >= 5 ? d.data.importance * 3 : d.data.importance * 1.5);
+
+            setTimeout(() => {
+                node.selectAll("circle")
+                    .transition()
+                    .duration(500)
+                    .attr("r", d => d.data.importance * 1.5);
+            }, 1500);
+        }
+
+        let extinctHidden = false;
+        function toggleExtinct() {
+            extinctHidden = !extinctHidden;
+            d3.selectAll(".branch.extinct")
+                .transition()
+                .duration(500)
+                .style("opacity", extinctHidden ? 0 : 0.3);
+
+            node.filter(d => d.data.extinct)
+                .transition()
+                .duration(500)
+                .style("opacity", extinctHidden ? 0 : 1);
+        }
+
+        console.log("Interactive AI Evolution Tree loaded successfully! 🎨");
+    </script>
+</body>
+</html>

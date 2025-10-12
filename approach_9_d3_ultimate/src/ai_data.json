@@ -1,0 +1,1046 @@
+{
+  "name": "Perceptron",
+  "year": 1958,
+  "color": "#2F4F4F",
+  "importance": 5,
+  "branch_type": "root",
+  "extinct": false,
+  "children": [
+    {
+      "name": "Symbolic AI",
+      "year": 1960,
+      "color": "#8B7355",
+      "importance": 3,
+      "branch_type": "symbolic",
+      "extinct": true,
+      "children": [
+        {
+          "name": "ELIZA",
+          "year": 1966,
+          "color": "#8B7355",
+          "importance": 2,
+          "branch_type": "symbolic",
+          "extinct": true
+        },
+        {
+          "name": "Expert Systems",
+          "year": 1975,
+          "color": "#8B7355",
+          "importance": 2,
+          "branch_type": "symbolic",
+          "extinct": true
+        }
+      ]
+    },
+    {
+      "name": "Backpropagation",
+      "year": 1986,
+      "color": "#FF6347",
+      "importance": 5,
+      "branch_type": "innovation",
+      "extinct": false,
+      "children": [
+        {
+          "name": "CNNs",
+          "year": 1989,
+          "color": "#9370DB",
+          "importance": 4,
+          "branch_type": "cnn",
+          "extinct": false,
+          "children": [
+            {
+              "name": "LeNet-1",
+              "year": 1989,
+              "color": "#9370DB",
+              "importance": 2,
+              "branch_type": "cnn",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "LeNet-5",
+                  "year": 1998,
+                  "color": "#9370DB",
+                  "importance": 3,
+                  "branch_type": "cnn",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "AlexNet",
+                      "year": 2012,
+                      "color": "#9370DB",
+                      "importance": 5,
+                      "branch_type": "cnn",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "VGGNet",
+                          "year": 2014,
+                          "color": "#9370DB",
+                          "importance": 3,
+                          "branch_type": "cnn",
+                          "extinct": false
+                        },
+                        {
+                          "name": "GoogLeNet",
+                          "year": 2014,
+                          "color": "#9370DB",
+                          "importance": 3,
+                          "branch_type": "cnn",
+                          "extinct": false
+                        },
+                        {
+                          "name": "ResNet",
+                          "year": 2015,
+                          "color": "#9370DB",
+                          "importance": 5,
+                          "branch_type": "cnn",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "EfficientNet",
+                              "year": 2019,
+                              "color": "#9370DB",
+                              "importance": 3,
+                              "branch_type": "cnn",
+                              "extinct": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "RNNs",
+          "year": 1990,
+          "color": "#4169E1",
+          "importance": 3,
+          "branch_type": "rnn",
+          "extinct": true,
+          "children": [
+            {
+              "name": "LSTM",
+              "year": 1997,
+              "color": "#4169E1",
+              "importance": 4,
+              "branch_type": "rnn",
+              "extinct": true,
+              "children": [
+                {
+                  "name": "GRU",
+                  "year": 2014,
+                  "color": "#4169E1",
+                  "importance": 2,
+                  "branch_type": "rnn",
+                  "extinct": true
+                },
+                {
+                  "name": "Seq2Seq",
+                  "year": 2014,
+                  "color": "#4169E1",
+                  "importance": 3,
+                  "branch_type": "rnn",
+                  "extinct": true
+                }
+              ]
+            },
+            {
+              "name": "Word2Vec",
+              "year": 2013,
+              "color": "#87CEEB",
+              "importance": 3,
+              "branch_type": "embedding",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "GloVe",
+                  "year": 2014,
+                  "color": "#87CEEB",
+                  "importance": 2,
+                  "branch_type": "embedding",
+                  "extinct": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "GANs",
+          "year": 2014,
+          "color": "#FFA500",
+          "importance": 4,
+          "branch_type": "gan",
+          "extinct": true,
+          "children": [
+            {
+              "name": "Progressive GAN",
+              "year": 2017,
+              "color": "#FFA500",
+              "importance": 2,
+              "branch_type": "gan",
+              "extinct": true,
+              "children": [
+                {
+                  "name": "StyleGAN",
+                  "year": 2018,
+                  "color": "#FFA500",
+                  "importance": 3,
+                  "branch_type": "gan",
+                  "extinct": true,
+                  "children": [
+                    {
+                      "name": "StyleGAN2",
+                      "year": 2019,
+                      "color": "#FFA500",
+                      "importance": 3,
+                      "branch_type": "gan",
+                      "extinct": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "BigGAN",
+              "year": 2018,
+              "color": "#FFA500",
+              "importance": 2,
+              "branch_type": "gan",
+              "extinct": true
+            }
+          ]
+        },
+        {
+          "name": "Transformers",
+          "year": 2017,
+          "color": "#00CED1",
+          "importance": 5,
+          "branch_type": "transformer",
+          "extinct": false,
+          "children": [
+            {
+              "name": "BERT",
+              "year": 2018,
+              "color": "#8B008B",
+              "importance": 5,
+              "branch_type": "encoder",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "RoBERTa",
+                  "year": 2019,
+                  "color": "#8B008B",
+                  "importance": 3,
+                  "branch_type": "encoder",
+                  "extinct": false
+                },
+                {
+                  "name": "ALBERT",
+                  "year": 2019,
+                  "color": "#8B008B",
+                  "importance": 2,
+                  "branch_type": "encoder",
+                  "extinct": false
+                },
+                {
+                  "name": "DistilBERT",
+                  "year": 2019,
+                  "color": "#8B008B",
+                  "importance": 2,
+                  "branch_type": "encoder",
+                  "extinct": false
+                },
+                {
+                  "name": "ELECTRA",
+                  "year": 2020,
+                  "color": "#8B008B",
+                  "importance": 2,
+                  "branch_type": "encoder",
+                  "extinct": false
+                },
+                {
+                  "name": "ModernBERT",
+                  "year": 2024,
+                  "color": "#8B008B",
+                  "importance": 2,
+                  "branch_type": "encoder",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "GPT",
+              "year": 2018,
+              "color": "#00BFFF",
+              "importance": 4,
+              "branch_type": "decoder",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "GPT-2",
+                  "year": 2019,
+                  "color": "#00BFFF",
+                  "importance": 4,
+                  "branch_type": "decoder",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "GPT-3",
+                      "year": 2020,
+                      "color": "#00BFFF",
+                      "importance": 5,
+                      "branch_type": "decoder",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "GPT-3.5",
+                          "year": 2022,
+                          "color": "#00BFFF",
+                          "importance": 4,
+                          "branch_type": "decoder",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "ChatGPT",
+                              "year": 2022,
+                              "color": "#00BFFF",
+                              "importance": 5,
+                              "branch_type": "decoder",
+                              "extinct": false,
+                              "children": [
+                                {
+                                  "name": "GPT-4",
+                                  "year": 2023,
+                                  "color": "#00BFFF",
+                                  "importance": 5,
+                                  "branch_type": "decoder",
+                                  "extinct": false,
+                                  "children": [
+                                    {
+                                      "name": "GPT-4 Turbo",
+                                      "year": 2023,
+                                      "color": "#00BFFF",
+                                      "importance": 3,
+                                      "branch_type": "decoder",
+                                      "extinct": false,
+                                      "children": [
+                                        {
+                                          "name": "GPT-4o",
+                                          "year": 2024,
+                                          "color": "#00BFFF",
+                                          "importance": 4,
+                                          "branch_type": "decoder",
+                                          "extinct": false,
+                                          "children": [
+                                            {
+                                              "name": "o1",
+                                              "year": 2024,
+                                              "color": "#00BFFF",
+                                              "importance": 5,
+                                              "branch_type": "decoder",
+                                              "extinct": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "name": "GPT-4V",
+                                      "year": 2023,
+                                      "color": "#DA70D6",
+                                      "importance": 4,
+                                      "branch_type": "multimodal",
+                                      "extinct": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Claude",
+              "year": 2023,
+              "color": "#7B68EE",
+              "importance": 4,
+              "branch_type": "claude",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Claude 2",
+                  "year": 2023,
+                  "color": "#7B68EE",
+                  "importance": 3,
+                  "branch_type": "claude",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Claude 3 Haiku",
+                      "year": 2024,
+                      "color": "#7B68EE",
+                      "importance": 3,
+                      "branch_type": "claude",
+                      "extinct": false
+                    },
+                    {
+                      "name": "Claude 3 Sonnet",
+                      "year": 2024,
+                      "color": "#7B68EE",
+                      "importance": 4,
+                      "branch_type": "claude",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "Claude 3.5 Sonnet",
+                          "year": 2024,
+                          "color": "#7B68EE",
+                          "importance": 5,
+                          "branch_type": "claude",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "Claude 4 Sonnet",
+                              "year": 2025,
+                              "color": "#7B68EE",
+                              "importance": 5,
+                              "branch_type": "claude",
+                              "extinct": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Claude 3 Opus",
+                      "year": 2024,
+                      "color": "#7B68EE",
+                      "importance": 4,
+                      "branch_type": "claude",
+                      "extinct": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "PaLM",
+              "year": 2022,
+              "color": "#008B8B",
+              "importance": 4,
+              "branch_type": "google",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "PaLM 2",
+                  "year": 2023,
+                  "color": "#008B8B",
+                  "importance": 4,
+                  "branch_type": "google",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Gemini 1.0",
+                      "year": 2023,
+                      "color": "#008B8B",
+                      "importance": 4,
+                      "branch_type": "google",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "Gemini 1.5",
+                          "year": 2024,
+                          "color": "#008B8B",
+                          "importance": 4,
+                          "branch_type": "google",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "Gemini 2.0",
+                              "year": 2024,
+                              "color": "#008B8B",
+                              "importance": 4,
+                              "branch_type": "google",
+                              "extinct": false,
+                              "children": [
+                                {
+                                  "name": "Gemini 2.5",
+                                  "year": 2025,
+                                  "color": "#008B8B",
+                                  "importance": 4,
+                                  "branch_type": "google",
+                                  "extinct": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Gemma",
+                  "year": 2024,
+                  "color": "#20B2AA",
+                  "importance": 3,
+                  "branch_type": "google",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Gemma 2",
+                      "year": 2024,
+                      "color": "#20B2AA",
+                      "importance": 3,
+                      "branch_type": "google",
+                      "extinct": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "LLaMA",
+              "year": 2023,
+              "color": "#FF4500",
+              "importance": 5,
+              "branch_type": "llama",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "LLaMA 2",
+                  "year": 2023,
+                  "color": "#FF4500",
+                  "importance": 4,
+                  "branch_type": "llama",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "LLaMA 3",
+                      "year": 2024,
+                      "color": "#FF4500",
+                      "importance": 5,
+                      "branch_type": "llama",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "LLaMA 3.1",
+                          "year": 2024,
+                          "color": "#FF4500",
+                          "importance": 4,
+                          "branch_type": "llama",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "LLaMA 3.2",
+                              "year": 2024,
+                              "color": "#FF4500",
+                              "importance": 3,
+                              "branch_type": "llama",
+                              "extinct": false,
+                              "children": [
+                                {
+                                  "name": "LLaMA 4",
+                                  "year": 2025,
+                                  "color": "#FF4500",
+                                  "importance": 4,
+                                  "branch_type": "llama",
+                                  "extinct": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Code Llama",
+                  "year": 2023,
+                  "color": "#FF6347",
+                  "importance": 3,
+                  "branch_type": "llama",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "Phi-1",
+              "year": 2023,
+              "color": "#C0C0C0",
+              "importance": 2,
+              "branch_type": "microsoft",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Phi-2",
+                  "year": 2023,
+                  "color": "#C0C0C0",
+                  "importance": 3,
+                  "branch_type": "microsoft",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Phi-3",
+                      "year": 2024,
+                      "color": "#C0C0C0",
+                      "importance": 3,
+                      "branch_type": "microsoft",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "Phi-4",
+                          "year": 2025,
+                          "color": "#C0C0C0",
+                          "importance": 3,
+                          "branch_type": "microsoft",
+                          "extinct": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Command",
+              "year": 2023,
+              "color": "#CD7F32",
+              "importance": 3,
+              "branch_type": "cohere",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Command R",
+                  "year": 2024,
+                  "color": "#CD7F32",
+                  "importance": 3,
+                  "branch_type": "cohere",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Command R+",
+                      "year": 2024,
+                      "color": "#CD7F32",
+                      "importance": 3,
+                      "branch_type": "cohere",
+                      "extinct": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "T5",
+              "year": 2019,
+              "color": "#9ACD32",
+              "importance": 4,
+              "branch_type": "enc-dec",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "FLAN-T5",
+                  "year": 2022,
+                  "color": "#9ACD32",
+                  "importance": 3,
+                  "branch_type": "enc-dec",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "BART",
+              "year": 2019,
+              "color": "#9ACD32",
+              "importance": 3,
+              "branch_type": "enc-dec",
+              "extinct": false
+            },
+            {
+              "name": "CLIP",
+              "year": 2021,
+              "color": "#DA70D6",
+              "importance": 4,
+              "branch_type": "multimodal",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "DALL-E",
+                  "year": 2021,
+                  "color": "#DA70D6",
+                  "importance": 4,
+                  "branch_type": "multimodal",
+                  "extinct": false
+                },
+                {
+                  "name": "Flamingo",
+                  "year": 2022,
+                  "color": "#DA70D6",
+                  "importance": 3,
+                  "branch_type": "multimodal",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "ViT",
+              "year": 2020,
+              "color": "#BA55D3",
+              "importance": 4,
+              "branch_type": "vit",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "DeiT",
+                  "year": 2020,
+                  "color": "#BA55D3",
+                  "importance": 2,
+                  "branch_type": "vit",
+                  "extinct": false
+                },
+                {
+                  "name": "Swin Transformer",
+                  "year": 2021,
+                  "color": "#BA55D3",
+                  "importance": 3,
+                  "branch_type": "vit",
+                  "extinct": false
+                },
+                {
+                  "name": "BEiT",
+                  "year": 2021,
+                  "color": "#BA55D3",
+                  "importance": 2,
+                  "branch_type": "vit",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "Qwen",
+              "year": 2023,
+              "color": "#DC143C",
+              "importance": 4,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Qwen-2",
+                  "year": 2024,
+                  "color": "#DC143C",
+                  "importance": 4,
+                  "branch_type": "chinese",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "Qwen-2.5",
+                      "year": 2024,
+                      "color": "#DC143C",
+                      "importance": 4,
+                      "branch_type": "chinese",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "Qwen-2.5-Max",
+                          "year": 2025,
+                          "color": "#DC143C",
+                          "importance": 4,
+                          "branch_type": "chinese",
+                          "extinct": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "ERNIE",
+              "year": 2019,
+              "color": "#FFD700",
+              "importance": 3,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "ERNIE 3.0",
+                  "year": 2021,
+                  "color": "#FFD700",
+                  "importance": 3,
+                  "branch_type": "chinese",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "ERNIE Bot",
+                      "year": 2023,
+                      "color": "#FFD700",
+                      "importance": 3,
+                      "branch_type": "chinese",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "ERNIE 4.0",
+                          "year": 2023,
+                          "color": "#FFD700",
+                          "importance": 3,
+                          "branch_type": "chinese",
+                          "extinct": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Doubao",
+              "year": 2024,
+              "color": "#FF8C00",
+              "importance": 3,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Doubao-1.5-Pro",
+                  "year": 2025,
+                  "color": "#FF8C00",
+                  "importance": 3,
+                  "branch_type": "chinese",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "ChatGLM",
+              "year": 2023,
+              "color": "#B22222",
+              "importance": 3,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "GLM-4",
+                  "year": 2024,
+                  "color": "#B22222",
+                  "importance": 3,
+                  "branch_type": "chinese",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "Yi",
+              "year": 2023,
+              "color": "#8B0000",
+              "importance": 3,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "Yi-VL",
+                  "year": 2024,
+                  "color": "#8B0000",
+                  "importance": 3,
+                  "branch_type": "chinese",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "DeepSeek",
+              "year": 2023,
+              "color": "#800000",
+              "importance": 4,
+              "branch_type": "chinese",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "DeepSeek-V2",
+                  "year": 2024,
+                  "color": "#800000",
+                  "importance": 4,
+                  "branch_type": "chinese",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "DeepSeek-R1",
+                      "year": 2025,
+                      "color": "#800000",
+                      "importance": 5,
+                      "branch_type": "chinese",
+                      "extinct": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Kimi",
+              "year": 2023,
+              "color": "#CD5C5C",
+              "importance": 3,
+              "branch_type": "chinese",
+              "extinct": false
+            }
+          ]
+        },
+        {
+          "name": "DDPM",
+          "year": 2020,
+          "color": "#FF1493",
+          "importance": 4,
+          "branch_type": "diffusion",
+          "extinct": false,
+          "children": [
+            {
+              "name": "DALL-E 2",
+              "year": 2022,
+              "color": "#FF1493",
+              "importance": 5,
+              "branch_type": "diffusion",
+              "extinct": false
+            },
+            {
+              "name": "Stable Diffusion",
+              "year": 2022,
+              "color": "#FF1493",
+              "importance": 5,
+              "branch_type": "diffusion",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "SD 2.x",
+                  "year": 2022,
+                  "color": "#FF1493",
+                  "importance": 3,
+                  "branch_type": "diffusion",
+                  "extinct": false,
+                  "children": [
+                    {
+                      "name": "SDXL",
+                      "year": 2023,
+                      "color": "#FF1493",
+                      "importance": 4,
+                      "branch_type": "diffusion",
+                      "extinct": false,
+                      "children": [
+                        {
+                          "name": "SD 3",
+                          "year": 2024,
+                          "color": "#FF1493",
+                          "importance": 4,
+                          "branch_type": "diffusion",
+                          "extinct": false,
+                          "children": [
+                            {
+                              "name": "SD 3.5",
+                              "year": 2024,
+                              "color": "#FF1493",
+                              "importance": 3,
+                              "branch_type": "diffusion",
+                              "extinct": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Midjourney",
+              "year": 2022,
+              "color": "#FF69B4",
+              "importance": 5,
+              "branch_type": "diffusion",
+              "extinct": false
+            },
+            {
+              "name": "Imagen 3",
+              "year": 2024,
+              "color": "#FF1493",
+              "importance": 3,
+              "branch_type": "diffusion",
+              "extinct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Neocognitron",
+      "year": 1980,
+      "color": "#DDA0DD",
+      "importance": 2,
+      "branch_type": "cnn",
+      "extinct": true
+    },
+    {
+      "name": "Q-Learning",
+      "year": 1989,
+      "color": "#228B22",
+      "importance": 3,
+      "branch_type": "rl",
+      "extinct": false,
+      "children": [
+        {
+          "name": "DQN",
+          "year": 2013,
+          "color": "#228B22",
+          "importance": 3,
+          "branch_type": "rl",
+          "extinct": false,
+          "children": [
+            {
+              "name": "AlphaGo",
+              "year": 2016,
+              "color": "#228B22",
+              "importance": 5,
+              "branch_type": "rl",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "AlphaGo Zero",
+                  "year": 2017,
+                  "color": "#228B22",
+                  "importance": 4,
+                  "branch_type": "rl",
+                  "extinct": false
+                }
+              ]
+            },
+            {
+              "name": "PPO",
+              "year": 2017,
+              "color": "#228B22",
+              "importance": 3,
+              "branch_type": "rl",
+              "extinct": false,
+              "children": [
+                {
+                  "name": "RLHF",
+                  "year": 2020,
+                  "color": "#228B22",
+                  "importance": 4,
+                  "branch_type": "rl",
+                  "extinct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AI Evolution - Style 1: Elegant Radial</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .link {
+            fill: none;
+            stroke-opacity: 0.6;
+            stroke-linecap: round;
+            transition: stroke-opacity 0.3s;
+        }
+
+        .link:hover {
+            stroke-opacity: 1;
+            stroke-width: 4px !important;
+        }
+
+        .node circle {
+            stroke: white;
+            stroke-width: 2;
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .node:hover circle {
+            r: 12;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        .node text {
+            font: 11px 'Georgia', serif;
+            text-shadow: 0 1px 3px white, 0 1px 3px white;
+            pointer-events: none;
+        }
+
+        .node.important text {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 8px;
+            pointer-events: none;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .tooltip h3 {
+            margin: 0 0 8px 0;
+            color: #1C2833;
+            font-size: 16px;
+        }
+
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #1C2833;
+            z-index: 100;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(255,255,255,0.8);
+        }
+
+        .title h2 {
+            margin: 8px 0 0 0;
+            font-size: 16px;
+            font-weight: normal;
+            font-style: italic;
+            color: #515A5A;
+        }
+
+        .controls {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .control-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            margin: 8px 0;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>The Tree of Artificial Intelligence</h1>
+        <h2>Evolution from Perceptrons to AGI • 1958—2025</h2>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="zoomReset()">Reset View</button>
+        <button class="control-btn" onclick="toggleExtinct()">Toggle Extinct</button>
+        <button class="control-btn" onclick="highlightPath()">Highlight Main Path</button>
+        <button class="control-btn" onclick="exportSVG()">Save as SVG</button>
+    </div>
+
+    <div id="container"></div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Full AI dataset
+        const data = {
+            name: "Perceptron",
+            year: 1958,
+            importance: 5,
+            color: "#2F4F4F",
+            extinct: false,
+            branch: "root",
+            children: [
+                {
+                    name: "Symbolic AI",
+                    year: 1960,
+                    importance: 2,
+                    color: "#8B7355",
+                    extinct: true,
+                    branch: "symbolic",
+                    children: [
+                        {name: "ELIZA", year: 1966, importance: 2, color: "#8B7355", extinct: true, branch: "symbolic"},
+                        {name: "Expert Systems", year: 1975, importance: 2, color: "#8B7355", extinct: true, branch: "symbolic"}
+                    ]
+                },
+                {
+                    name: "Backpropagation",
+                    year: 1986,
+                    importance: 5,
+                    color: "#FF6347",
+                    extinct: false,
+                    branch: "innovation",
+                    children: [
+                        {
+                            name: "CNNs",
+                            year: 1989,
+                            importance: 4,
+                            color: "#9370DB",
+                            extinct: false,
+                            branch: "cnn",
+                            children: [
+                                {name: "LeNet-5", year: 1998, importance: 3, color: "#9370DB", extinct: false, branch: "cnn"},
+                                {
+                                    name: "AlexNet",
+                                    year: 2012,
+                                    importance: 5,
+                                    color: "#9370DB",
+                                    extinct: false,
+                                    branch: "cnn",
+                                    children: [
+                                        {name: "VGGNet", year: 2014, importance: 3, color: "#9370DB", extinct: false, branch: "cnn"},
+                                        {name: "ResNet", year: 2015, importance: 5, color: "#9370DB", extinct: false, branch: "cnn"},
+                                        {name: "EfficientNet", year: 2019, importance: 3, color: "#9370DB", extinct: false, branch: "cnn"}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: "RNNs",
+                            year: 1990,
+                            importance: 3,
+                            color: "#4169E1",
+                            extinct: true,
+                            branch: "rnn",
+                            children: [
+                                {
+                                    name: "LSTM",
+                                    year: 1997,
+                                    importance: 4,
+                                    color: "#4169E1",
+                                    extinct: true,
+                                    branch: "rnn",
+                                    children: [
+                                        {name: "Seq2Seq", year: 2014, importance: 3, color: "#4169E1", extinct: true, branch: "rnn"}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: "GANs",
+                            year: 2014,
+                            importance: 4,
+                            color: "#FFA500",
+                            extinct: true,
+                            branch: "gan",
+                            children: [
+                                {name: "StyleGAN", year: 2018, importance: 3, color: "#FFA500", extinct: true, branch: "gan"},
+                                {name: "BigGAN", year: 2018, importance: 2, color: "#FFA500", extinct: true, branch: "gan"}
+                            ]
+                        },
+                        {
+                            name: "Transformers",
+                            year: 2017,
+                            importance: 5,
+                            color: "#00CED1",
+                            extinct: false,
+                            branch: "transformer",
+                            children: [
+                                {
+                                    name: "BERT",
+                                    year: 2018,
+                                    importance: 5,
+                                    color: "#8B008B",
+                                    extinct: false,
+                                    branch: "encoder",
+                                    children: [
+                                        {name: "RoBERTa", year: 2019, importance: 3, color: "#8B008B", extinct: false, branch: "encoder"},
+                                        {name: "ModernBERT", year: 2024, importance: 2, color: "#8B008B", extinct: false, branch: "encoder"}
+                                    ]
+                                },
+                                {
+                                    name: "GPT",
+                                    year: 2018,
+                                    importance: 4,
+                                    color: "#00BFFF",
+                                    extinct: false,
+                                    branch: "decoder",
+                                    children: [
+                                        {name: "GPT-2", year: 2019, importance: 4, color: "#00BFFF", extinct: false, branch: "decoder"},
+                                        {
+                                            name: "GPT-3",
+                                            year: 2020,
+                                            importance: 5,
+                                            color: "#00BFFF",
+                                            extinct: false,
+                                            branch: "decoder",
+                                            children: [
+                                                {
+                                                    name: "ChatGPT",
+                                                    year: 2022,
+                                                    importance: 5,
+                                                    color: "#00BFFF",
+                                                    extinct: false,
+                                                    branch: "decoder",
+                                                    children: [
+                                                        {
+                                                            name: "GPT-4",
+                                                            year: 2023,
+                                                            importance: 5,
+                                                            color: "#00BFFF",
+                                                            extinct: false,
+                                                            branch: "decoder",
+                                                            children: [
+                                                                {name: "GPT-4o", year: 2024, importance: 4, color: "#00BFFF", extinct: false, branch: "decoder"},
+                                                                {name: "o1", year: 2024, importance: 5, color: "#00BFFF", extinct: false, branch: "decoder"}
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: "Claude",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#7B68EE",
+                                    extinct: false,
+                                    branch: "claude",
+                                    children: [
+                                        {
+                                            name: "Claude 3",
+                                            year: 2024,
+                                            importance: 4,
+                                            color: "#7B68EE",
+                                            extinct: false,
+                                            branch: "claude",
+                                            children: [
+                                                {name: "Claude 3.5 Sonnet", year: 2024, importance: 5, color: "#7B68EE", extinct: false, branch: "claude"},
+                                                {name: "Claude 4", year: 2025, importance: 5, color: "#7B68EE", extinct: false, branch: "claude"}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: "LLaMA",
+                                    year: 2023,
+                                    importance: 5,
+                                    color: "#FF4500",
+                                    extinct: false,
+                                    branch: "llama",
+                                    children: [
+                                        {
+                                            name: "LLaMA 2",
+                                            year: 2023,
+                                            importance: 4,
+                                            color: "#FF4500",
+                                            extinct: false,
+                                            branch: "llama",
+                                            children: [
+                                                {name: "LLaMA 3", year: 2024, importance: 5, color: "#FF4500", extinct: false, branch: "llama"}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: "Gemini",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#008B8B",
+                                    extinct: false,
+                                    branch: "google",
+                                    children: [
+                                        {name: "Gemini 1.5", year: 2024, importance: 4, color: "#008B8B", extinct: false, branch: "google"},
+                                        {name: "Gemini 2.0", year: 2024, importance: 4, color: "#008B8B", extinct: false, branch: "google"}
+                                    ]
+                                },
+                                {
+                                    name: "Qwen",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#DC143C",
+                                    extinct: false,
+                                    branch: "chinese",
+                                    children: [
+                                        {name: "Qwen-2.5", year: 2024, importance: 4, color: "#DC143C", extinct: false, branch: "chinese"}
+                                    ]
+                                },
+                                {
+                                    name: "DeepSeek",
+                                    year: 2023,
+                                    importance: 4,
+                                    color: "#800000",
+                                    extinct: false,
+                                    branch: "chinese",
+                                    children: [
+                                        {name: "DeepSeek-R1", year: 2025, importance: 5, color: "#800000", extinct: false, branch: "chinese"}
+                                    ]
+                                },
+                                {name: "ViT", year: 2020, importance: 4, color: "#BA55D3", extinct: false, branch: "vit"}
+                            ]
+                        },
+                        {
+                            name: "Diffusion",
+                            year: 2020,
+                            importance: 4,
+                            color: "#FF1493",
+                            extinct: false,
+                            branch: "diffusion",
+                            children: [
+                                {name: "DALL-E 2", year: 2022, importance: 5, color: "#FF1493", extinct: false, branch: "diffusion"},
+                                {
+                                    name: "Stable Diffusion",
+                                    year: 2022,
+                                    importance: 5,
+                                    color: "#FF1493",
+                                    extinct: false,
+                                    branch: "diffusion",
+                                    children: [
+                                        {name: "SDXL", year: 2023, importance: 4, color: "#FF1493", extinct: false, branch: "diffusion"}
+                                    ]
+                                },
+                                {name: "Midjourney", year: 2022, importance: 5, color: "#FF69B4", extinct: false, branch: "diffusion"}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Q-Learning",
+                    year: 1989,
+                    importance: 3,
+                    color: "#228B22",
+                    extinct: false,
+                    branch: "rl",
+                    children: [
+                        {
+                            name: "DQN",
+                            year: 2013,
+                            importance: 3,
+                            color: "#228B22",
+                            extinct: false,
+                            branch: "rl",
+                            children: [
+                                {name: "AlphaGo", year: 2016, importance: 5, color: "#228B22", extinct: false, branch: "rl"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Setup
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const radius = Math.min(width, height) / 2 - 150;
+
+        const svg = d3.select("#container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("id", "main-svg");
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${width/2},${height/2})`);
+
+        // Zoom
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 4])
+            .on("zoom", (event) => {
+                g.attr("transform", `translate(${width/2 + event.transform.x},${height/2 + event.transform.y}) scale(${event.transform.k})`);
+            });
+
+        svg.call(zoom);
+
+        // Tree layout
+        const tree = d3.tree()
+            .size([2 * Math.PI, radius])
+            .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+
+        const root = d3.hierarchy(data);
+        tree(root);
+
+        // Links with beautiful curves
+        const link = g.selectAll(".link")
+            .data(root.links())
+            .enter().append("path")
+            .attr("class", "link")
+            .attr("d", d3.linkRadial()
+                .angle(d => d.x)
+                .radius(d => d.y))
+            .attr("stroke", d => d.target.data.color)
+            .attr("stroke-width", d => d.target.data.importance * 1.5)
+            .attr("stroke-opacity", d => d.target.data.extinct ? 0.2 : 0.6);
+
+        // Nodes
+        const node = g.selectAll(".node")
+            .data(root.descendants())
+            .enter().append("g")
+            .attr("class", d => `node ${d.data.importance >= 5 ? 'important' : ''}`)
+            .attr("transform", d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+
+        node.append("circle")
+            .attr("r", d => d.data.importance * 1.8)
+            .attr("fill", d => d.data.color)
+            .attr("fill-opacity", d => d.data.extinct ? 0.4 : 0.9)
+            .on("mouseover", function(event, d) {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("display", "block")
+                    .html(`
+                        <h3>${d.data.name}</h3>
+                        <p><strong>Year:</strong> ${d.data.year}</p>
+                        <p><strong>Importance:</strong> ${d.data.importance}/5</p>
+                        <p><strong>Branch:</strong> ${d.data.branch}</p>
+                        <p><strong>Status:</strong> ${d.data.extinct ? 'Deprecated' : 'Active'}</p>
+                    `)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+            })
+            .on("mouseout", () => {
+                d3.select("#tooltip").style("display", "none");
+            });
+
+        // Labels for important nodes
+        node.filter(d => d.data.importance >= 4)
+            .append("text")
+            .attr("dy", "0.31em")
+            .attr("x", d => d.x < Math.PI ? 8 : -8)
+            .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")
+            .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+            .text(d => d.data.name)
+            .attr("fill", "#1A1A1A");
+
+        // Control functions
+        window.zoomReset = () => {
+            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+        };
+
+        let extinctHidden = false;
+        window.toggleExtinct = () => {
+            extinctHidden = !extinctHidden;
+            link.filter(d => d.target.data.extinct)
+                .transition().duration(500)
+                .attr("stroke-opacity", extinctHidden ? 0 : 0.2);
+            node.filter(d => d.data.extinct)
+                .transition().duration(500)
+                .style("opacity", extinctHidden ? 0 : 1);
+        };
+
+        window.highlightPath = () => {
+            // Find path from root to most important leaves
+            const importantNodes = root.descendants().filter(d => d.data.importance >= 5);
+
+            link.transition().duration(500)
+                .attr("stroke-opacity", 0.1);
+
+            importantNodes.forEach(target => {
+                let current = target;
+                while (current.parent) {
+                    link.filter(d => d.source === current.parent && d.target === current)
+                        .transition().duration(500)
+                        .attr("stroke-opacity", 1)
+                        .attr("stroke-width", 4);
+                    current = current.parent;
+                }
+            });
+
+            setTimeout(() => {
+                link.transition().duration(500)
+                    .attr("stroke-opacity", d => d.target.data.extinct ? 0.2 : 0.6)
+                    .attr("stroke-width", d => d.target.data.importance * 1.5);
+            }, 3000);
+        };
+
+        window.exportSVG = () => {
+            const svgData = document.getElementById("main-svg").outerHTML;
+            const blob = new Blob([svgData], {type: "image/svg+xml"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "ai_tree_style1_elegant.svg";
+            link.click();
+        };
+
+        console.log("Style 1: Elegant Radial Dendrogram loaded! ✨");
+        console.log("Zoom with mouse wheel, drag to pan");
+    </script>
+</body>
+</html>

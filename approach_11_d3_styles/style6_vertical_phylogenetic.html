@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evolution - Phylogenetic Tree (Biological Style)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+            background: linear-gradient(to bottom, #fdfbf7 0%, #f5f1e8 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #container {
+            position: relative;
+        }
+
+        svg {
+            display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+        }
+
+        .branch {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+
+        .branch:hover {
+            opacity: 1;
+            filter: drop-shadow(0 0 4px currentColor);
+        }
+
+        .branch.extinct {
+            opacity: 0.25;
+            stroke-dasharray: 2,2;
+        }
+
+        .node circle {
+            stroke: white;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .node circle:hover {
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 6px currentColor);
+        }
+
+        .node.extinct circle {
+            opacity: 0.3;
+        }
+
+        .label {
+            font-size: 9px;
+            fill: #2c3e50;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .label.important {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .label.extinct {
+            opacity: 0.4;
+            font-style: italic;
+        }
+
+        .timeline-ring {
+            fill: none;
+            stroke: #d6d0c4;
+            stroke-width: 0.5;
+            opacity: 0.5;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            fill: #95a5a6;
+            text-anchor: middle;
+            font-weight: 600;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: 300;
+            fill: #2c3e50;
+            text-anchor: middle;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            fill: #7f8c8d;
+            text-anchor: middle;
+            font-style: italic;
+        }
+
+        .legend-box {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0ddd5;
+            font-size: 11px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+        }
+
+        .legend-swatch {
+            width: 20px;
+            height: 3px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0ddd5;
+        }
+
+        .controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .controls button:hover {
+            background: #2980b9;
+        }
+
+        .info-box {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0ddd5;
+            max-width: 280px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .info-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <div class="info-title">The Phylogenetic Tree of AI</div>
+        <p>This visualization shows the complete evolutionary history of artificial intelligence from 1958 to 2025, following the structure of biological phylogenetic trees.</p>
+        <p><strong>Reading the tree:</strong></p>
+        <ul style="margin: 8px 0; padding-left: 18px;">
+            <li>Time flows from center (1958) outward (2025)</li>
+            <li>Branches show ancestry and divergence</li>
+            <li>Branch thickness = importance</li>
+            <li>Dashed lines = extinct lineages</li>
+        </ul>
+        <p style="margin-top: 12px; color: #7f8c8d; font-size: 10px;">All 114 major AI models • 67 years of evolution</p>
+    </div>
+
+    <div class="legend-box">
+        <div class="legend-title">AI Families</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #9370DB;"></span>CNNs & Vision</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #4169E1;"></span>RNNs (extinct)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #FFA500;"></span>GANs (extinct)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #00CED1;"></span>Transformers</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #00BFFF;"></span>GPT Family</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #7B68EE;"></span>Claude</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #FF4500;"></span>LLaMA</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #008B8B;"></span>Google (Gemini)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #DC143C;"></span>Chinese AI</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #FF1493;"></span>Diffusion Models</div>
+        <div class="legend-item"><span class="legend-swatch" style="background: #228B22;"></span>RL & Games</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="toggleExtinct()">Toggle Extinct</button>
+        <button onclick="resetView()">Reset View</button>
+        <button onclick="exportSVG()">Export SVG</button>
+    </div>
+
+    <div id="container"></div>
+
+    <script>
+        // All 114 AI models
+        const models = [
+            {"name": "Perceptron", "parent": null, "year": 1958, "color": "#2F4F4F", "importance": 5, "branch_type": "root", "extinct": false},
+            {"name": "Symbolic AI", "parent": "Perceptron", "year": 1960, "color": "#8B7355", "importance": 3, "branch_type": "symbolic", "extinct": true},
+            {"name": "ELIZA", "parent": "Symbolic AI", "year": 1966, "color": "#8B7355", "importance": 2, "branch_type": "symbolic", "extinct": true},
+            {"name": "Expert Systems", "parent": "Symbolic AI", "year": 1975, "color": "#8B7355", "importance": 2, "branch_type": "symbolic", "extinct": true},
+            {"name": "Backpropagation", "parent": "Perceptron", "year": 1986, "color": "#FF6347", "importance": 5, "branch_type": "innovation", "extinct": false},
+            {"name": "Neocognitron", "parent": "Perceptron", "year": 1980, "color": "#DDA0DD", "importance": 2, "branch_type": "cnn", "extinct": true},
+            {"name": "CNNs", "parent": "Backpropagation", "year": 1989, "color": "#9370DB", "importance": 4, "branch_type": "cnn", "extinct": false},
+            {"name": "LeNet-1", "parent": "CNNs", "year": 1989, "color": "#9370DB", "importance": 2, "branch_type": "cnn", "extinct": false},
+            {"name": "LeNet-5", "parent": "LeNet-1", "year": 1998, "color": "#9370DB", "importance": 3, "branch_type": "cnn", "extinct": false},
+            {"name": "AlexNet", "parent": "LeNet-5", "year": 2012, "color": "#9370DB", "importance": 5, "branch_type": "cnn", "extinct": false},
+            {"name": "VGGNet", "parent": "AlexNet", "year": 2014, "color": "#9370DB", "importance": 3, "branch_type": "cnn", "extinct": false},
+            {"name": "GoogLeNet", "parent": "AlexNet", "year": 2014, "color": "#9370DB", "importance": 3, "branch_type": "cnn", "extinct": false},
+            {"name": "ResNet", "parent": "AlexNet", "year": 2015, "color": "#9370DB", "importance": 5, "branch_type": "cnn", "extinct": false},
+            {"name": "EfficientNet", "parent": "ResNet", "year": 2019, "color": "#9370DB", "importance": 3, "branch_type": "cnn", "extinct": false},
+            {"name": "RNNs", "parent": "Backpropagation", "year": 1990, "color": "#4169E1", "importance": 3, "branch_type": "rnn", "extinct": true},
+            {"name": "LSTM", "parent": "RNNs", "year": 1997, "color": "#4169E1", "importance": 4, "branch_type": "rnn", "extinct": true},
+            {"name": "GRU", "parent": "LSTM", "year": 2014, "color": "#4169E1", "importance": 2, "branch_type": "rnn", "extinct": true},
+            {"name": "Seq2Seq", "parent": "LSTM", "year": 2014, "color": "#4169E1", "importance": 3, "branch_type": "rnn", "extinct": true},
+            {"name": "Word2Vec", "parent": "RNNs", "year": 2013, "color": "#87CEEB", "importance": 3, "branch_type": "embedding", "extinct": false},
+            {"name": "GloVe", "parent": "Word2Vec", "year": 2014, "color": "#87CEEB", "importance": 2, "branch_type": "embedding", "extinct": false},
+            {"name": "GANs", "parent": "Backpropagation", "year": 2014, "color": "#FFA500", "importance": 4, "branch_type": "gan", "extinct": true},
+            {"name": "Progressive GAN", "parent": "GANs", "year": 2017, "color": "#FFA500", "importance": 2, "branch_type": "gan", "extinct": true},
+            {"name": "StyleGAN", "parent": "Progressive GAN", "year": 2018, "color": "#FFA500", "importance": 3, "branch_type": "gan", "extinct": true},
+            {"name": "StyleGAN2", "parent": "StyleGAN", "year": 2019, "color": "#FFA500", "importance": 3, "branch_type": "gan", "extinct": true},
+            {"name": "BigGAN", "parent": "GANs", "year": 2018, "color": "#FFA500", "importance": 2, "branch_type": "gan", "extinct": true},
+            {"name": "Q-Learning", "parent": "Perceptron", "year": 1989, "color": "#228B22", "importance": 3, "branch_type": "rl", "extinct": false},
+            {"name": "DQN", "parent": "Q-Learning", "year": 2013, "color": "#228B22", "importance": 3, "branch_type": "rl", "extinct": false},
+            {"name": "AlphaGo", "parent": "DQN", "year": 2016, "color": "#228B22", "importance": 5, "branch_type": "rl", "extinct": false},
+            {"name": "AlphaGo Zero", "parent": "AlphaGo", "year": 2017, "color": "#228B22", "importance": 4, "branch_type": "rl", "extinct": false},
+            {"name": "PPO", "parent": "DQN", "year": 2017, "color": "#228B22", "importance": 3, "branch_type": "rl", "extinct": false},
+            {"name": "RLHF", "parent": "PPO", "year": 2020, "color": "#228B22", "importance": 4, "branch_type": "rl", "extinct": false},
+            {"name": "Transformers", "parent": "Backpropagation", "year": 2017, "color": "#00CED1", "importance": 5, "branch_type": "transformer", "extinct": false},
+            {"name": "BERT", "parent": "Transformers", "year": 2018, "color": "#8B008B", "importance": 5, "branch_type": "encoder", "extinct": false},
+            {"name": "RoBERTa", "parent": "BERT", "year": 2019, "color": "#8B008B", "importance": 3, "branch_type": "encoder", "extinct": false},
+            {"name": "ALBERT", "parent": "BERT", "year": 2019, "color": "#8B008B", "importance": 2, "branch_type": "encoder", "extinct": false},
+            {"name": "DistilBERT", "parent": "BERT", "year": 2019, "color": "#8B008B", "importance": 2, "branch_type": "encoder", "extinct": false},
+            {"name": "ELECTRA", "parent": "BERT", "year": 2020, "color": "#8B008B", "importance": 2, "branch_type": "encoder", "extinct": false},
+            {"name": "ModernBERT", "parent": "BERT", "year": 2024, "color": "#8B008B", "importance": 2, "branch_type": "encoder", "extinct": false},
+            {"name": "GPT", "parent": "Transformers", "year": 2018, "color": "#00BFFF", "importance": 4, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-2", "parent": "GPT", "year": 2019, "color": "#00BFFF", "importance": 4, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-3", "parent": "GPT-2", "year": 2020, "color": "#00BFFF", "importance": 5, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-3.5", "parent": "GPT-3", "year": 2022, "color": "#00BFFF", "importance": 4, "branch_type": "decoder", "extinct": false},
+            {"name": "ChatGPT", "parent": "GPT-3.5", "year": 2022, "color": "#00BFFF", "importance": 5, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-4", "parent": "ChatGPT", "year": 2023, "color": "#00BFFF", "importance": 5, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-4 Turbo", "parent": "GPT-4", "year": 2023, "color": "#00BFFF", "importance": 3, "branch_type": "decoder", "extinct": false},
+            {"name": "GPT-4o", "parent": "GPT-4 Turbo", "year": 2024, "color": "#00BFFF", "importance": 4, "branch_type": "decoder", "extinct": false},
+            {"name": "o1", "parent": "GPT-4o", "year": 2024, "color": "#00BFFF", "importance": 5, "branch_type": "decoder", "extinct": false},
+            {"name": "Claude", "parent": "Transformers", "year": 2023, "color": "#7B68EE", "importance": 4, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 2", "parent": "Claude", "year": 2023, "color": "#7B68EE", "importance": 3, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 3 Haiku", "parent": "Claude 2", "year": 2024, "color": "#7B68EE", "importance": 3, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 3 Sonnet", "parent": "Claude 2", "year": 2024, "color": "#7B68EE", "importance": 4, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 3 Opus", "parent": "Claude 2", "year": 2024, "color": "#7B68EE", "importance": 4, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 3.5 Sonnet", "parent": "Claude 3 Sonnet", "year": 2024, "color": "#7B68EE", "importance": 5, "branch_type": "claude", "extinct": false},
+            {"name": "Claude 4 Sonnet", "parent": "Claude 3.5 Sonnet", "year": 2025, "color": "#7B68EE", "importance": 5, "branch_type": "claude", "extinct": false},
+            {"name": "PaLM", "parent": "Transformers", "year": 2022, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "PaLM 2", "parent": "PaLM", "year": 2023, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "Gemini 1.0", "parent": "PaLM 2", "year": 2023, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "Gemini 1.5", "parent": "Gemini 1.0", "year": 2024, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "Gemini 2.0", "parent": "Gemini 1.5", "year": 2024, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "Gemini 2.5", "parent": "Gemini 2.0", "year": 2025, "color": "#008B8B", "importance": 4, "branch_type": "google", "extinct": false},
+            {"name": "Gemma", "parent": "PaLM", "year": 2024, "color": "#20B2AA", "importance": 3, "branch_type": "google", "extinct": false},
+            {"name": "Gemma 2", "parent": "Gemma", "year": 2024, "color": "#20B2AA", "importance": 3, "branch_type": "google", "extinct": false},
+            {"name": "LLaMA", "parent": "Transformers", "year": 2023, "color": "#FF4500", "importance": 5, "branch_type": "llama", "extinct": false},
+            {"name": "LLaMA 2", "parent": "LLaMA", "year": 2023, "color": "#FF4500", "importance": 4, "branch_type": "llama", "extinct": false},
+            {"name": "LLaMA 3", "parent": "LLaMA 2", "year": 2024, "color": "#FF4500", "importance": 5, "branch_type": "llama", "extinct": false},
+            {"name": "LLaMA 3.1", "parent": "LLaMA 3", "year": 2024, "color": "#FF4500", "importance": 4, "branch_type": "llama", "extinct": false},
+            {"name": "LLaMA 3.2", "parent": "LLaMA 3.1", "year": 2024, "color": "#FF4500", "importance": 3, "branch_type": "llama", "extinct": false},
+            {"name": "LLaMA 4", "parent": "LLaMA 3.2", "year": 2025, "color": "#FF4500", "importance": 4, "branch_type": "llama", "extinct": false},
+            {"name": "Code Llama", "parent": "LLaMA", "year": 2023, "color": "#FF6347", "importance": 3, "branch_type": "llama", "extinct": false},
+            {"name": "Phi-1", "parent": "Transformers", "year": 2023, "color": "#C0C0C0", "importance": 2, "branch_type": "microsoft", "extinct": false},
+            {"name": "Phi-2", "parent": "Phi-1", "year": 2023, "color": "#C0C0C0", "importance": 3, "branch_type": "microsoft", "extinct": false},
+            {"name": "Phi-3", "parent": "Phi-2", "year": 2024, "color": "#C0C0C0", "importance": 3, "branch_type": "microsoft", "extinct": false},
+            {"name": "Phi-4", "parent": "Phi-3", "year": 2025, "color": "#C0C0C0", "importance": 3, "branch_type": "microsoft", "extinct": false},
+            {"name": "Command", "parent": "Transformers", "year": 2023, "color": "#CD7F32", "importance": 3, "branch_type": "cohere", "extinct": false},
+            {"name": "Command R", "parent": "Command", "year": 2024, "color": "#CD7F32", "importance": 3, "branch_type": "cohere", "extinct": false},
+            {"name": "Command R+", "parent": "Command R", "year": 2024, "color": "#CD7F32", "importance": 3, "branch_type": "cohere", "extinct": false},
+            {"name": "T5", "parent": "Transformers", "year": 2019, "color": "#9ACD32", "importance": 4, "branch_type": "enc-dec", "extinct": false},
+            {"name": "BART", "parent": "Transformers", "year": 2019, "color": "#9ACD32", "importance": 3, "branch_type": "enc-dec", "extinct": false},
+            {"name": "FLAN-T5", "parent": "T5", "year": 2022, "color": "#9ACD32", "importance": 3, "branch_type": "enc-dec", "extinct": false},
+            {"name": "CLIP", "parent": "Transformers", "year": 2021, "color": "#DA70D6", "importance": 4, "branch_type": "multimodal", "extinct": false},
+            {"name": "DALL-E", "parent": "CLIP", "year": 2021, "color": "#DA70D6", "importance": 4, "branch_type": "multimodal", "extinct": false},
+            {"name": "Flamingo", "parent": "CLIP", "year": 2022, "color": "#DA70D6", "importance": 3, "branch_type": "multimodal", "extinct": false},
+            {"name": "GPT-4V", "parent": "GPT-4", "year": 2023, "color": "#DA70D6", "importance": 4, "branch_type": "multimodal", "extinct": false},
+            {"name": "ViT", "parent": "Transformers", "year": 2020, "color": "#BA55D3", "importance": 4, "branch_type": "vit", "extinct": false},
+            {"name": "DeiT", "parent": "ViT", "year": 2020, "color": "#BA55D3", "importance": 2, "branch_type": "vit", "extinct": false},
+            {"name": "Swin Transformer", "parent": "ViT", "year": 2021, "color": "#BA55D3", "importance": 3, "branch_type": "vit", "extinct": false},
+            {"name": "BEiT", "parent": "ViT", "year": 2021, "color": "#BA55D3", "importance": 2, "branch_type": "vit", "extinct": false},
+            {"name": "DDPM", "parent": "Backpropagation", "year": 2020, "color": "#FF1493", "importance": 4, "branch_type": "diffusion", "extinct": false},
+            {"name": "DALL-E 2", "parent": "DDPM", "year": 2022, "color": "#FF1493", "importance": 5, "branch_type": "diffusion", "extinct": false},
+            {"name": "Stable Diffusion", "parent": "DDPM", "year": 2022, "color": "#FF1493", "importance": 5, "branch_type": "diffusion", "extinct": false},
+            {"name": "SD 2.x", "parent": "Stable Diffusion", "year": 2022, "color": "#FF1493", "importance": 3, "branch_type": "diffusion", "extinct": false},
+            {"name": "SDXL", "parent": "SD 2.x", "year": 2023, "color": "#FF1493", "importance": 4, "branch_type": "diffusion", "extinct": false},
+            {"name": "Midjourney", "parent": "DDPM", "year": 2022, "color": "#FF69B4", "importance": 5, "branch_type": "diffusion", "extinct": false},
+            {"name": "SD 3", "parent": "SDXL", "year": 2024, "color": "#FF1493", "importance": 4, "branch_type": "diffusion", "extinct": false},
+            {"name": "SD 3.5", "parent": "SD 3", "year": 2024, "color": "#FF1493", "importance": 3, "branch_type": "diffusion", "extinct": false},
+            {"name": "Imagen 3", "parent": "DDPM", "year": 2024, "color": "#FF1493", "importance": 3, "branch_type": "diffusion", "extinct": false},
+            {"name": "Qwen", "parent": "Transformers", "year": 2023, "color": "#DC143C", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "Qwen-2", "parent": "Qwen", "year": 2024, "color": "#DC143C", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "Qwen-2.5", "parent": "Qwen-2", "year": 2024, "color": "#DC143C", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "Qwen-2.5-Max", "parent": "Qwen-2.5", "year": 2025, "color": "#DC143C", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "ERNIE", "parent": "Transformers", "year": 2019, "color": "#FFD700", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "ERNIE 3.0", "parent": "ERNIE", "year": 2021, "color": "#FFD700", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "ERNIE Bot", "parent": "ERNIE 3.0", "year": 2023, "color": "#FFD700", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "ERNIE 4.0", "parent": "ERNIE Bot", "year": 2023, "color": "#FFD700", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "Doubao", "parent": "Transformers", "year": 2024, "color": "#FF8C00", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "Doubao-1.5-Pro", "parent": "Doubao", "year": 2025, "color": "#FF8C00", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "ChatGLM", "parent": "Transformers", "year": 2023, "color": "#B22222", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "GLM-4", "parent": "ChatGLM", "year": 2024, "color": "#B22222", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "Yi", "parent": "Transformers", "year": 2023, "color": "#8B0000", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "Yi-VL", "parent": "Yi", "year": 2024, "color": "#8B0000", "importance": 3, "branch_type": "chinese", "extinct": false},
+            {"name": "DeepSeek", "parent": "Transformers", "year": 2023, "color": "#800000", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "DeepSeek-V2", "parent": "DeepSeek", "year": 2024, "color": "#800000", "importance": 4, "branch_type": "chinese", "extinct": false},
+            {"name": "DeepSeek-R1", "parent": "DeepSeek-V2", "year": 2025, "color": "#800000", "importance": 5, "branch_type": "chinese", "extinct": false},
+            {"name": "Kimi", "parent": "Transformers", "year": 2023, "color": "#CD5C5C", "importance": 3, "branch_type": "chinese", "extinct": false}
+        ];
+
+        // Setup dimensions
+        const width = 1600;
+        const height = 1800;
+        const centerX = width / 2;
+        const centerY = height - 150;
+
+        // Create SVG
+        const svg = d3.select("#container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Radial scale for time (1958-2025)
+        const radiusScale = d3.scaleLinear()
+            .domain([1958, 2025])
+            .range([50, 700]);
+
+        // Build tree structure
+        const nodeMap = new Map();
+        models.forEach(m => {
+            nodeMap.set(m.name, {...m, children: []});
+        });
+
+        models.forEach(m => {
+            if (m.parent) {
+                const parent = nodeMap.get(m.parent);
+                if (parent) {
+                    parent.children.push(nodeMap.get(m.name));
+                }
+            }
+        });
+
+        const root = nodeMap.get("Perceptron");
+
+        // Assign angular positions (semicircular fan layout)
+        function assignAngles(node, angleStart = -135, angleEnd = -45) {
+            node.angle = (angleStart + angleEnd) / 2;
+            node.radius = radiusScale(node.year);
+
+            if (node.children.length > 0) {
+                const angleRange = angleEnd - angleStart;
+                const angleStep = angleRange / node.children.length;
+
+                node.children.forEach((child, i) => {
+                    assignAngles(
+                        child,
+                        angleStart + i * angleStep,
+                        angleStart + (i + 1) * angleStep
+                    );
+                });
+            }
+        }
+
+        assignAngles(root);
+
+        // Convert to Cartesian coordinates
+        function toCartesian(radius, angleDeg) {
+            const angleRad = (angleDeg * Math.PI) / 180;
+            return {
+                x: centerX + radius * Math.cos(angleRad),
+                y: centerY + radius * Math.sin(angleRad)
+            };
+        }
+
+        // Collect all nodes
+        const allNodes = [];
+        function collectNodes(node) {
+            const pos = toCartesian(node.radius, node.angle);
+            node.x = pos.x;
+            node.y = pos.y;
+            allNodes.push(node);
+            node.children.forEach(collectNodes);
+        }
+        collectNodes(root);
+
+        // Draw timeline rings
+        const timelineYears = [1960, 1970, 1980, 1990, 2000, 2010, 2020, 2025];
+        const timelineGroup = svg.append("g").attr("class", "timeline");
+
+        timelineGroup.selectAll("path")
+            .data(timelineYears)
+            .join("path")
+            .attr("class", "timeline-ring")
+            .attr("d", d => {
+                const r = radiusScale(d);
+                return d3.arc()
+                    .innerRadius(r)
+                    .outerRadius(r)
+                    .startAngle(-135 * Math.PI / 180)
+                    .endAngle(-45 * Math.PI / 180)
+                    ();
+            })
+            .attr("transform", `translate(${centerX},${centerY})`);
+
+        timelineGroup.selectAll("text")
+            .data(timelineYears)
+            .join("text")
+            .attr("class", "timeline-label")
+            .attr("x", d => centerX)
+            .attr("y", d => centerY - radiusScale(d) - 8)
+            .text(d => d);
+
+        // Draw branches
+        const branchGroup = svg.append("g").attr("class", "branches");
+
+        allNodes.forEach(node => {
+            node.children.forEach(child => {
+                // Smooth curved path
+                const parentPos = {x: node.x, y: node.y};
+                const childPos = {x: child.x, y: child.y};
+
+                // Control points for Bezier curve
+                const midRadius = (node.radius + child.radius) / 2;
+                const midAngle = (node.angle + child.angle) / 2;
+                const controlPos = toCartesian(midRadius, midAngle);
+
+                const path = d3.path();
+                path.moveTo(parentPos.x, parentPos.y);
+                path.quadraticCurveTo(controlPos.x, controlPos.y, childPos.x, childPos.y);
+
+                branchGroup.append("path")
+                    .attr("class", child.extinct ? "branch extinct" : "branch")
+                    .attr("d", path.toString())
+                    .attr("stroke", child.color)
+                    .attr("stroke-width", child.importance * 1.2);
+            });
+        });
+
+        // Draw nodes
+        const nodeGroup = svg.append("g").attr("class", "nodes");
+
+        const nodeElements = nodeGroup.selectAll("g")
+            .data(allNodes)
+            .join("g")
+            .attr("class", d => d.extinct ? "node extinct" : "node")
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+
+        nodeElements.append("circle")
+            .attr("r", d => d.importance * 1.3 + 1.5)
+            .attr("fill", d => d.color);
+
+        // Add labels (intelligent positioning)
+        const labelGroup = svg.append("g").attr("class", "labels");
+
+        allNodes.forEach(node => {
+            // Label important models and leaf nodes
+            if (node.importance >= 4 || node.children.length === 0) {
+                const angleRad = (node.angle * Math.PI) / 180;
+                const isLeft = node.angle < -90;
+                const offset = 8;
+
+                const labelX = node.x + Math.cos(angleRad) * offset;
+                const labelY = node.y + Math.sin(angleRad) * offset;
+
+                labelGroup.append("text")
+                    .attr("class", node.extinct ? "label extinct" : (node.importance >= 5 ? "label important" : "label"))
+                    .attr("x", labelX)
+                    .attr("y", labelY)
+                    .attr("text-anchor", isLeft ? "end" : "start")
+                    .attr("dominant-baseline", "middle")
+                    .text(node.name);
+            }
+        });
+
+        // Title
+        svg.append("text")
+            .attr("class", "title")
+            .attr("x", width / 2)
+            .attr("y", 60)
+            .text("The Phylogenetic Tree of Artificial Intelligence");
+
+        svg.append("text")
+            .attr("class", "subtitle")
+            .attr("x", width / 2)
+            .attr("y", 85)
+            .text("1958—2025 • 114 Models • 67 Years of Evolution");
+
+        // Interactive controls
+        let extinctVisible = true;
+
+        function toggleExtinct() {
+            extinctVisible = !extinctVisible;
+            d3.selectAll(".extinct").style("display", extinctVisible ? null : "none");
+        }
+
+        function resetView() {
+            d3.selectAll(".extinct").style("display", null);
+            extinctVisible = true;
+        }
+
+        function exportSVG() {
+            const svgData = document.querySelector("svg").outerHTML;
+            const blob = new Blob([svgData], {type: "image/svg+xml"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "ai_phylogenetic_tree_biological_style.svg";
+            link.click();
+        }
+    </script>
+</body>
+</html>

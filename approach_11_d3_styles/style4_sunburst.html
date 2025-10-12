@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evolution Tree - Style 4: Sunburst Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom right, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        svg {
+            display: block;
+        }
+
+        .arc {
+            cursor: pointer;
+            transition: all 0.3s;
+            stroke: #000;
+            stroke-width: 0.5;
+        }
+
+        .arc:hover {
+            stroke: #fff;
+            stroke-width: 2;
+            filter: brightness(1.3);
+        }
+
+        text {
+            pointer-events: none;
+            fill: white;
+            font-size: 9px;
+            text-anchor: middle;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .center-text {
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .center-name {
+            font-size: 28px;
+            font-weight: bold;
+            fill: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .center-year {
+            font-size: 16px;
+            fill: rgba(255,255,255,0.8);
+            text-shadow: 0 1px 5px rgba(0,0,0,0.6);
+        }
+
+        .center-importance {
+            font-size: 14px;
+            fill: rgba(255,255,255,0.7);
+        }
+
+        .controls {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(15px);
+        }
+
+        .controls button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .controls button:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: white;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 4px;
+        }
+
+        .title p {
+            margin: 10px 0 0 0;
+            font-size: 15px;
+            opacity: 0.8;
+            letter-spacing: 2px;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px 25px;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(15px);
+            max-width: 300px;
+        }
+
+        .info-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .info-item {
+            margin: 8px 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .breadcrumb {
+            position: absolute;
+            top: 120px;
+            left: 30px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: white;
+            font-size: 11px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-size: 11px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(15px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+        }
+
+        .legend-swatch {
+            width: 20px;
+            height: 12px;
+            margin-right: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="title">
+            <h1>AI EVOLUTION</h1>
+            <p>SUNBURST VISUALIZATION • 1958—2025</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="resetZoom()">🔍 Reset Zoom</button>
+            <button onclick="toggleExtinct()">👻 Toggle Extinct</button>
+            <button onclick="expandAll()">📂 Expand All</button>
+            <button onclick="exportSVG()">💾 Export SVG</button>
+        </div>
+
+        <div class="breadcrumb" id="breadcrumb">
+            Click on any segment to zoom in
+        </div>
+
+        <div class="info-panel">
+            <div class="info-title">💡 Interactive Features</div>
+            <div class="info-item">• Click segments to zoom and explore</div>
+            <div class="info-item">• Hover to see model details</div>
+            <div class="info-item">• Size represents importance</div>
+            <div class="info-item">• Color indicates AI family</div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><span class="legend-swatch" style="background: #9370DB;"></span>CNNs</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #00CED1;"></span>Transformers</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #00BFFF;"></span>GPT Family</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #7B68EE;"></span>Claude</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #FF4500;"></span>LLaMA</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #008B8B;"></span>Gemini</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #FF1493;"></span>Diffusion</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #DC143C;"></span>Chinese AI</div>
+            <div class="legend-item"><span class="legend-swatch" style="background: #228B22;"></span>RL/Games</div>
+        </div>
+    </div>
+
+    <script>
+        // Hierarchical data
+        const data = {
+            "name": "Perceptron",
+            "year": 1958,
+            "color": "#2F4F4F",
+            "importance": 5,
+            "extinct": false,
+            "children": [
+                {
+                    "name": "ADALINE", "year": 1960, "color": "#4682B4", "importance": 3, "extinct": true, "children": []
+                },
+                {
+                    "name": "Backpropagation", "year": 1986, "color": "#4682B4", "importance": 5, "extinct": false,
+                    "children": [
+                        {
+                            "name": "LeNet", "year": 1989, "color": "#9370DB", "importance": 4, "extinct": false,
+                            "children": [
+                                {
+                                    "name": "AlexNet", "year": 2012, "color": "#9370DB", "importance": 5, "extinct": false,
+                                    "children": [
+                                        { "name": "VGG", "year": 2014, "color": "#9370DB", "importance": 4, "extinct": false, "children": [] },
+                                        { "name": "GoogLeNet", "year": 2014, "color": "#9370DB", "importance": 4, "extinct": false, "children": [] },
+                                        {
+                                            "name": "ResNet", "year": 2015, "color": "#9370DB", "importance": 5, "extinct": false,
+                                            "children": [
+                                                { "name": "DenseNet", "year": 2017, "color": "#9370DB", "importance": 3, "extinct": false, "children": [] },
+                                                { "name": "EfficientNet", "year": 2019, "color": "#9370DB", "importance": 4, "extinct": false, "children": [] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "LSTM", "year": 1997, "color": "#20B2AA", "importance": 5, "extinct": false,
+                            "children": [
+                                { "name": "GRU", "year": 2014, "color": "#20B2AA", "importance": 4, "extinct": false, "children": [] },
+                                {
+                                    "name": "Seq2Seq", "year": 2014, "color": "#20B2AA", "importance": 5, "extinct": false,
+                                    "children": [
+                                        {
+                                            "name": "Attention", "year": 2015, "color": "#00CED1", "importance": 5, "extinct": false,
+                                            "children": [
+                                                {
+                                                    "name": "Transformer", "year": 2017, "color": "#00CED1", "importance": 5, "extinct": false,
+                                                    "children": [
+                                                        {
+                                                            "name": "BERT", "year": 2018, "color": "#00CED1", "importance": 5, "extinct": false,
+                                                            "children": [
+                                                                { "name": "RoBERTa", "year": 2019, "color": "#00CED1", "importance": 4, "extinct": false, "children": [] },
+                                                                { "name": "ALBERT", "year": 2019, "color": "#00CED1", "importance": 3, "extinct": false, "children": [] }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "GPT", "year": 2018, "color": "#00BFFF", "importance": 5, "extinct": false,
+                                                            "children": [
+                                                                {
+                                                                    "name": "GPT-2", "year": 2019, "color": "#00BFFF", "importance": 5, "extinct": false,
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "GPT-3", "year": 2020, "color": "#00BFFF", "importance": 5, "extinct": false,
+                                                                            "children": [
+                                                                                {
+                                                                                    "name": "GPT-3.5", "year": 2022, "color": "#00BFFF", "importance": 5, "extinct": false,
+                                                                                    "children": [
+                                                                                        {
+                                                                                            "name": "GPT-4", "year": 2023, "color": "#00BFFF", "importance": 5, "extinct": false,
+                                                                                            "children": [
+                                                                                                { "name": "GPT-4o", "year": 2024, "color": "#00BFFF", "importance": 5, "extinct": false, "children": [] }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Claude", "year": 2023, "color": "#7B68EE", "importance": 5, "extinct": false,
+                                                            "children": [
+                                                                {
+                                                                    "name": "Claude 2", "year": 2023, "color": "#7B68EE", "importance": 5, "extinct": false,
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "Claude 3", "year": 2024, "color": "#7B68EE", "importance": 5, "extinct": false,
+                                                                            "children": [
+                                                                                { "name": "Claude 3.5", "year": 2024, "color": "#7B68EE", "importance": 5, "extinct": false, "children": [] }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "LLaMA", "year": 2023, "color": "#FF4500", "importance": 5, "extinct": false,
+                                                            "children": [
+                                                                {
+                                                                    "name": "LLaMA 2", "year": 2023, "color": "#FF4500", "importance": 5, "extinct": false,
+                                                                    "children": [
+                                                                        { "name": "LLaMA 3", "year": 2024, "color": "#FF4500", "importance": 5, "extinct": false, "children": [] }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Gemini", "year": 2023, "color": "#008B8B", "importance": 5, "extinct": false,
+                                                            "children": [
+                                                                { "name": "Gemini 1.5", "year": 2024, "color": "#008B8B", "importance": 5, "extinct": false, "children": [] }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "GAN", "year": 2014, "color": "#FF69B4", "importance": 5, "extinct": false,
+                            "children": [
+                                { "name": "DCGAN", "year": 2015, "color": "#FF69B4", "importance": 4, "extinct": false, "children": [] },
+                                {
+                                    "name": "StyleGAN", "year": 2018, "color": "#FF69B4", "importance": 4, "extinct": false,
+                                    "children": [
+                                        { "name": "StyleGAN2", "year": 2019, "color": "#FF69B4", "importance": 4, "extinct": false, "children": [] }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Diffusion", "year": 2020, "color": "#FF1493", "importance": 5, "extinct": false,
+                            "children": [
+                                {
+                                    "name": "DALL-E", "year": 2021, "color": "#FF1493", "importance": 5, "extinct": false,
+                                    "children": [
+                                        {
+                                            "name": "DALL-E 2", "year": 2022, "color": "#FF1493", "importance": 5, "extinct": false,
+                                            "children": [
+                                                { "name": "DALL-E 3", "year": 2023, "color": "#FF1493", "importance": 5, "extinct": false, "children": [] }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                { "name": "Stable Diffusion", "year": 2022, "color": "#FF1493", "importance": 5, "extinct": false, "children": [] },
+                                { "name": "Midjourney", "year": 2022, "color": "#FF1493", "importance": 5, "extinct": false, "children": [] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Q-Learning", "year": 1989, "color": "#228B22", "importance": 4, "extinct": false,
+                    "children": [
+                        {
+                            "name": "DQN", "year": 2013, "color": "#228B22", "importance": 5, "extinct": false,
+                            "children": [
+                                {
+                                    "name": "AlphaGo", "year": 2016, "color": "#228B22", "importance": 5, "extinct": false,
+                                    "children": [
+                                        { "name": "AlphaZero", "year": 2017, "color": "#228B22", "importance": 5, "extinct": false, "children": [] }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const width = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+        const radius = width / 2;
+
+        const svg = d3.select("#container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", width)
+            .style("font", "10px sans-serif");
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${width / 2},${width / 2})`);
+
+        // Partition layout
+        const partition = d3.partition()
+            .size([2 * Math.PI, radius]);
+
+        const root = d3.hierarchy(data)
+            .sum(d => d.importance || 1)
+            .sort((a, b) => b.value - a.value);
+
+        partition(root);
+
+        // Arc generator
+        const arc = d3.arc()
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .innerRadius(d => d.y0)
+            .outerRadius(d => d.y1);
+
+        // Create arcs
+        const path = g.selectAll("path")
+            .data(root.descendants())
+            .join("path")
+            .attr("class", "arc")
+            .attr("fill", d => {
+                const opacity = d.data.extinct ? 0.4 : 0.9;
+                return d.data.color + Math.floor(opacity * 255).toString(16).padStart(2, '0');
+            })
+            .attr("d", arc)
+            .on("click", clicked);
+
+        // Add labels for outer ring
+        const labels = g.selectAll("text")
+            .data(root.descendants().filter(d => d.depth > 0 && (d.x1 - d.x0) > 0.05))
+            .join("text")
+            .attr("transform", d => {
+                const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+                const y = (d.y0 + d.y1) / 2;
+                return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+            })
+            .attr("dy", "0.35em")
+            .text(d => d.data.importance >= 4 ? d.data.name : "");
+
+        // Center text
+        const centerText = g.append("g")
+            .attr("class", "center-text");
+
+        const centerName = centerText.append("text")
+            .attr("class", "center-name")
+            .attr("y", -15)
+            .text("AI Evolution");
+
+        const centerYear = centerText.append("text")
+            .attr("class", "center-year")
+            .attr("y", 10)
+            .text("1958—2025");
+
+        const centerImportance = centerText.append("text")
+            .attr("class", "center-importance")
+            .attr("y", 35)
+            .text("Click to explore");
+
+        let currentNode = root;
+
+        function clicked(event, p) {
+            currentNode = p;
+
+            // Update center text
+            centerName.text(p.data.name);
+            centerYear.text(p.data.year);
+            centerImportance.text("⭐".repeat(p.data.importance));
+
+            // Update breadcrumb
+            const ancestors = p.ancestors().reverse().map(d => d.data.name);
+            document.getElementById("breadcrumb").textContent = ancestors.join(" → ");
+
+            // Zoom transition
+            root.each(d => d.target = {
+                x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+                x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+                y0: Math.max(0, d.y0 - p.y0),
+                y1: Math.max(0, d.y1 - p.y0)
+            });
+
+            const t = g.transition().duration(750);
+
+            path.transition(t)
+                .tween("data", d => {
+                    const i = d3.interpolate(d.current, d.target);
+                    return t => d.current = i(t);
+                })
+                .attrTween("d", d => () => arc(d.current));
+
+            labels.transition(t)
+                .attr("opacity", d => labelVisible(d.target) ? 1 : 0)
+                .attrTween("transform", d => () => labelTransform(d.current));
+        }
+
+        function labelVisible(d) {
+            return d.y1 <= radius && d.y0 >= 0 && (d.x1 - d.x0) > 0.03;
+        }
+
+        function labelTransform(d) {
+            const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+            const y = (d.y0 + d.y1) / 2;
+            return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+        }
+
+        root.each(d => d.current = {
+            x0: d.x0,
+            x1: d.x1,
+            y0: d.y0,
+            y1: d.y1
+        });
+
+        // Control functions
+        function resetZoom() {
+            clicked(null, root);
+        }
+
+        let extinctVisible = true;
+
+        function toggleExtinct() {
+            extinctVisible = !extinctVisible;
+            path.attr("opacity", d => {
+                if (d.data.extinct) {
+                    return extinctVisible ? 1 : 0;
+                }
+                return 1;
+            });
+        }
+
+        function expandAll() {
+            clicked(null, root);
+        }
+
+        function exportSVG() {
+            const svgData = document.querySelector("svg").outerHTML;
+            const blob = new Blob([svgData], {type: "image/svg+xml"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "ai_tree_sunburst.svg";
+            link.click();
+        }
+    </script>
+</body>
+</html>

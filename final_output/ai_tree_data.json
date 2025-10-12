@@ -1,0 +1,1252 @@
+{
+  "metadata": {
+    "title": "The Phylogenetic Tree of Artificial Intelligence",
+    "subtitle": "Evolution from Perceptron to AGI • 1958—2025",
+    "version": "1.0",
+    "totalModels": 114,
+    "yearRange": [1958, 2025]
+  },
+  "families": {
+    "root": {
+      "label": "Origin",
+      "color": "#2F4F4F",
+      "description": "The foundational neural network"
+    },
+    "symbolic": {
+      "label": "Symbolic AI",
+      "color": "#8B7355",
+      "description": "Early rule-based and logic systems",
+      "extinct": true
+    },
+    "neural": {
+      "label": "Neural Networks",
+      "color": "#4682B4",
+      "description": "Basic neural network architectures"
+    },
+    "cnn": {
+      "label": "Convolutional Neural Networks",
+      "color": "#9370DB",
+      "description": "Vision and image processing models"
+    },
+    "rnn": {
+      "label": "Recurrent Neural Networks",
+      "color": "#4169E1",
+      "description": "Sequential data processing",
+      "extinct": true
+    },
+    "gan": {
+      "label": "Generative Adversarial Networks",
+      "color": "#FFA500",
+      "description": "Image generation through adversarial training",
+      "extinct": true
+    },
+    "rl": {
+      "label": "Reinforcement Learning",
+      "color": "#228B22",
+      "description": "Agent learning through rewards"
+    },
+    "transformer": {
+      "label": "Transformers",
+      "color": "#00CED1",
+      "description": "Attention-based architecture revolution"
+    },
+    "encoder": {
+      "label": "Encoder Transformers",
+      "color": "#8B008B",
+      "description": "BERT family - bidirectional encoding"
+    },
+    "decoder": {
+      "label": "Decoder Transformers (GPT)",
+      "color": "#00BFFF",
+      "description": "GPT family - autoregressive generation"
+    },
+    "claude": {
+      "label": "Claude (Anthropic)",
+      "color": "#7B68EE",
+      "description": "Constitutional AI approach"
+    },
+    "google": {
+      "label": "Google AI",
+      "color": "#008B8B",
+      "description": "PaLM and Gemini family"
+    },
+    "llama": {
+      "label": "LLaMA (Meta)",
+      "color": "#FF4500",
+      "description": "Open source transformer models"
+    },
+    "chinese": {
+      "label": "Chinese AI",
+      "color": "#DC143C",
+      "description": "Chinese language models and AI systems"
+    },
+    "diffusion": {
+      "label": "Diffusion Models",
+      "color": "#FF1493",
+      "description": "Image generation through denoising"
+    },
+    "multimodal": {
+      "label": "Multimodal Models",
+      "color": "#DA70D6",
+      "description": "Vision-language models"
+    },
+    "other": {
+      "label": "Other",
+      "color": "#C0C0C0",
+      "description": "Miscellaneous models"
+    }
+  },
+  "models": [
+    {
+      "id": "perceptron",
+      "name": "Perceptron",
+      "year": 1958,
+      "family": "root",
+      "parents": [],
+      "importance": 5,
+      "extinct": false,
+      "description": "The first neural network algorithm, foundation of modern AI",
+      "breakthrough": true
+    },
+    {
+      "id": "symbolic-ai",
+      "name": "Symbolic AI",
+      "year": 1960,
+      "family": "symbolic",
+      "parents": ["perceptron"],
+      "importance": 3,
+      "extinct": true,
+      "description": "Rule-based AI systems"
+    },
+    {
+      "id": "eliza",
+      "name": "ELIZA",
+      "year": 1966,
+      "family": "symbolic",
+      "parents": ["symbolic-ai"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Early chatbot using pattern matching"
+    },
+    {
+      "id": "expert-systems",
+      "name": "Expert Systems",
+      "year": 1975,
+      "family": "symbolic",
+      "parents": ["symbolic-ai"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Domain-specific rule-based systems"
+    },
+    {
+      "id": "backpropagation",
+      "name": "Backpropagation",
+      "year": 1986,
+      "family": "neural",
+      "parents": ["perceptron"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Training algorithm that enabled deep learning",
+      "breakthrough": true
+    },
+    {
+      "id": "neocognitron",
+      "name": "Neocognitron",
+      "year": 1980,
+      "family": "cnn",
+      "parents": ["perceptron"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Early hierarchical neural network for vision"
+    },
+    {
+      "id": "cnns",
+      "name": "CNNs",
+      "year": 1989,
+      "family": "cnn",
+      "parents": ["backpropagation"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Convolutional neural networks for image processing"
+    },
+    {
+      "id": "lenet-1",
+      "name": "LeNet-1",
+      "year": 1989,
+      "family": "cnn",
+      "parents": ["cnns"],
+      "importance": 2,
+      "extinct": false,
+      "description": "First practical CNN for digit recognition"
+    },
+    {
+      "id": "lenet-5",
+      "name": "LeNet-5",
+      "year": 1998,
+      "family": "cnn",
+      "parents": ["lenet-1"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Improved CNN architecture"
+    },
+    {
+      "id": "alexnet",
+      "name": "AlexNet",
+      "year": 2012,
+      "family": "cnn",
+      "parents": ["lenet-5"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Won ImageNet, sparked deep learning revolution",
+      "breakthrough": true
+    },
+    {
+      "id": "vggnet",
+      "name": "VGGNet",
+      "year": 2014,
+      "family": "cnn",
+      "parents": ["alexnet"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Very deep CNN with small filters"
+    },
+    {
+      "id": "googlenet",
+      "name": "GoogLeNet",
+      "year": 2014,
+      "family": "cnn",
+      "parents": ["alexnet"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Inception architecture with multiple scales"
+    },
+    {
+      "id": "resnet",
+      "name": "ResNet",
+      "year": 2015,
+      "family": "cnn",
+      "parents": ["alexnet"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Residual connections enabling very deep networks",
+      "breakthrough": true
+    },
+    {
+      "id": "efficientnet",
+      "name": "EfficientNet",
+      "year": 2019,
+      "family": "cnn",
+      "parents": ["resnet"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Optimized CNN architecture"
+    },
+    {
+      "id": "rnns",
+      "name": "RNNs",
+      "year": 1990,
+      "family": "rnn",
+      "parents": ["backpropagation"],
+      "importance": 3,
+      "extinct": true,
+      "description": "Networks for sequential data"
+    },
+    {
+      "id": "lstm",
+      "name": "LSTM",
+      "year": 1997,
+      "family": "rnn",
+      "parents": ["rnns"],
+      "importance": 4,
+      "extinct": true,
+      "description": "Long Short-Term Memory for long sequences"
+    },
+    {
+      "id": "gru",
+      "name": "GRU",
+      "year": 2014,
+      "family": "rnn",
+      "parents": ["lstm"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Gated Recurrent Unit, simplified LSTM"
+    },
+    {
+      "id": "seq2seq",
+      "name": "Seq2Seq",
+      "year": 2014,
+      "family": "rnn",
+      "parents": ["lstm"],
+      "importance": 3,
+      "extinct": true,
+      "description": "Sequence to sequence learning"
+    },
+    {
+      "id": "word2vec",
+      "name": "Word2Vec",
+      "year": 2013,
+      "family": "rnn",
+      "parents": ["rnns"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Word embeddings"
+    },
+    {
+      "id": "glove",
+      "name": "GloVe",
+      "year": 2014,
+      "family": "rnn",
+      "parents": ["word2vec"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Global vectors for word representation"
+    },
+    {
+      "id": "gans",
+      "name": "GANs",
+      "year": 2014,
+      "family": "gan",
+      "parents": ["backpropagation"],
+      "importance": 4,
+      "extinct": true,
+      "description": "Generative Adversarial Networks"
+    },
+    {
+      "id": "progressive-gan",
+      "name": "Progressive GAN",
+      "year": 2017,
+      "family": "gan",
+      "parents": ["gans"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Progressive growing of GANs"
+    },
+    {
+      "id": "stylegan",
+      "name": "StyleGAN",
+      "year": 2018,
+      "family": "gan",
+      "parents": ["progressive-gan"],
+      "importance": 3,
+      "extinct": true,
+      "description": "Style-based GAN architecture"
+    },
+    {
+      "id": "stylegan2",
+      "name": "StyleGAN2",
+      "year": 2019,
+      "family": "gan",
+      "parents": ["stylegan"],
+      "importance": 3,
+      "extinct": true,
+      "description": "Improved StyleGAN"
+    },
+    {
+      "id": "biggan",
+      "name": "BigGAN",
+      "year": 2018,
+      "family": "gan",
+      "parents": ["gans"],
+      "importance": 2,
+      "extinct": true,
+      "description": "Large scale GAN training"
+    },
+    {
+      "id": "q-learning",
+      "name": "Q-Learning",
+      "year": 1989,
+      "family": "rl",
+      "parents": ["perceptron"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Foundational reinforcement learning algorithm"
+    },
+    {
+      "id": "dqn",
+      "name": "DQN",
+      "year": 2013,
+      "family": "rl",
+      "parents": ["q-learning"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Deep Q-Network combining RL with deep learning"
+    },
+    {
+      "id": "alphago",
+      "name": "AlphaGo",
+      "year": 2016,
+      "family": "rl",
+      "parents": ["dqn"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Defeated world Go champion",
+      "breakthrough": true
+    },
+    {
+      "id": "alphago-zero",
+      "name": "AlphaGo Zero",
+      "year": 2017,
+      "family": "rl",
+      "parents": ["alphago"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Self-taught Go playing"
+    },
+    {
+      "id": "ppo",
+      "name": "PPO",
+      "year": 2017,
+      "family": "rl",
+      "parents": ["dqn"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Proximal Policy Optimization"
+    },
+    {
+      "id": "rlhf",
+      "name": "RLHF",
+      "year": 2020,
+      "family": "rl",
+      "parents": ["ppo"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Reinforcement Learning from Human Feedback"
+    },
+    {
+      "id": "transformers",
+      "name": "Transformers",
+      "year": 2017,
+      "family": "transformer",
+      "parents": ["backpropagation"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Attention is All You Need - revolutionary architecture",
+      "breakthrough": true
+    },
+    {
+      "id": "bert",
+      "name": "BERT",
+      "year": 2018,
+      "family": "encoder",
+      "parents": ["transformers"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Bidirectional Encoder Representations"
+    },
+    {
+      "id": "roberta",
+      "name": "RoBERTa",
+      "year": 2019,
+      "family": "encoder",
+      "parents": ["bert"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Robustly optimized BERT"
+    },
+    {
+      "id": "albert",
+      "name": "ALBERT",
+      "year": 2019,
+      "family": "encoder",
+      "parents": ["bert"],
+      "importance": 2,
+      "extinct": false,
+      "description": "A Lite BERT"
+    },
+    {
+      "id": "distilbert",
+      "name": "DistilBERT",
+      "year": 2019,
+      "family": "encoder",
+      "parents": ["bert"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Distilled BERT"
+    },
+    {
+      "id": "electra",
+      "name": "ELECTRA",
+      "year": 2020,
+      "family": "encoder",
+      "parents": ["bert"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Efficiently Learning an Encoder"
+    },
+    {
+      "id": "modernbert",
+      "name": "ModernBERT",
+      "year": 2024,
+      "family": "encoder",
+      "parents": ["bert"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Updated BERT architecture"
+    },
+    {
+      "id": "gpt",
+      "name": "GPT",
+      "year": 2018,
+      "family": "decoder",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Generative Pre-trained Transformer"
+    },
+    {
+      "id": "gpt-2",
+      "name": "GPT-2",
+      "year": 2019,
+      "family": "decoder",
+      "parents": ["gpt"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Larger GPT with impressive generation"
+    },
+    {
+      "id": "gpt-3",
+      "name": "GPT-3",
+      "year": 2020,
+      "family": "decoder",
+      "parents": ["gpt-2"],
+      "importance": 5,
+      "extinct": false,
+      "description": "175B parameters, few-shot learning",
+      "breakthrough": true
+    },
+    {
+      "id": "gpt-3.5",
+      "name": "GPT-3.5",
+      "year": 2022,
+      "family": "decoder",
+      "parents": ["gpt-3"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Improved GPT-3"
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "year": 2022,
+      "family": "decoder",
+      "parents": ["gpt-3.5"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Conversational AI that went viral",
+      "breakthrough": true
+    },
+    {
+      "id": "gpt-4",
+      "name": "GPT-4",
+      "year": 2023,
+      "family": "decoder",
+      "parents": ["chatgpt"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Multimodal large language model"
+    },
+    {
+      "id": "gpt-4-turbo",
+      "name": "GPT-4 Turbo",
+      "year": 2023,
+      "family": "decoder",
+      "parents": ["gpt-4"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Faster, cheaper GPT-4"
+    },
+    {
+      "id": "gpt-4o",
+      "name": "GPT-4o",
+      "year": 2024,
+      "family": "decoder",
+      "parents": ["gpt-4-turbo"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Omni model with vision and audio"
+    },
+    {
+      "id": "o1",
+      "name": "o1",
+      "year": 2024,
+      "family": "decoder",
+      "parents": ["gpt-4o"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Reasoning-focused model"
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "year": 2023,
+      "family": "claude",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Anthropic's constitutional AI"
+    },
+    {
+      "id": "claude-2",
+      "name": "Claude 2",
+      "year": 2023,
+      "family": "claude",
+      "parents": ["claude"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Improved Claude"
+    },
+    {
+      "id": "claude-3-haiku",
+      "name": "Claude 3 Haiku",
+      "year": 2024,
+      "family": "claude",
+      "parents": ["claude-2"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Fast, compact Claude"
+    },
+    {
+      "id": "claude-3-sonnet",
+      "name": "Claude 3 Sonnet",
+      "year": 2024,
+      "family": "claude",
+      "parents": ["claude-2"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Balanced Claude"
+    },
+    {
+      "id": "claude-3-opus",
+      "name": "Claude 3 Opus",
+      "year": 2024,
+      "family": "claude",
+      "parents": ["claude-2"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Most capable Claude"
+    },
+    {
+      "id": "claude-3.5-sonnet",
+      "name": "Claude 3.5 Sonnet",
+      "year": 2024,
+      "family": "claude",
+      "parents": ["claude-3-sonnet"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Advanced Claude Sonnet"
+    },
+    {
+      "id": "claude-4-sonnet",
+      "name": "Claude 4 Sonnet",
+      "year": 2025,
+      "family": "claude",
+      "parents": ["claude-3.5-sonnet"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Next generation Claude"
+    },
+    {
+      "id": "palm",
+      "name": "PaLM",
+      "year": 2022,
+      "family": "google",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Pathways Language Model from Google"
+    },
+    {
+      "id": "palm-2",
+      "name": "PaLM 2",
+      "year": 2023,
+      "family": "google",
+      "parents": ["palm"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Improved PaLM"
+    },
+    {
+      "id": "gemini-1.0",
+      "name": "Gemini 1.0",
+      "year": 2023,
+      "family": "google",
+      "parents": ["palm-2"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Google's multimodal AI"
+    },
+    {
+      "id": "gemini-1.5",
+      "name": "Gemini 1.5",
+      "year": 2024,
+      "family": "google",
+      "parents": ["gemini-1.0"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Long context Gemini"
+    },
+    {
+      "id": "gemini-2.0",
+      "name": "Gemini 2.0",
+      "year": 2024,
+      "family": "google",
+      "parents": ["gemini-1.5"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Advanced Gemini"
+    },
+    {
+      "id": "gemini-2.5",
+      "name": "Gemini 2.5",
+      "year": 2025,
+      "family": "google",
+      "parents": ["gemini-2.0"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Latest Gemini"
+    },
+    {
+      "id": "gemma",
+      "name": "Gemma",
+      "year": 2024,
+      "family": "google",
+      "parents": ["palm"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Open source Google model"
+    },
+    {
+      "id": "gemma-2",
+      "name": "Gemma 2",
+      "year": 2024,
+      "family": "google",
+      "parents": ["gemma"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Improved Gemma"
+    },
+    {
+      "id": "llama",
+      "name": "LLaMA",
+      "year": 2023,
+      "family": "llama",
+      "parents": ["transformers"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Meta's open source LLM",
+      "breakthrough": true
+    },
+    {
+      "id": "llama-2",
+      "name": "LLaMA 2",
+      "year": 2023,
+      "family": "llama",
+      "parents": ["llama"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Improved LLaMA"
+    },
+    {
+      "id": "llama-3",
+      "name": "LLaMA 3",
+      "year": 2024,
+      "family": "llama",
+      "parents": ["llama-2"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Major LLaMA upgrade"
+    },
+    {
+      "id": "llama-3.1",
+      "name": "LLaMA 3.1",
+      "year": 2024,
+      "family": "llama",
+      "parents": ["llama-3"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Extended context LLaMA"
+    },
+    {
+      "id": "llama-3.2",
+      "name": "LLaMA 3.2",
+      "year": 2024,
+      "family": "llama",
+      "parents": ["llama-3.1"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Multimodal LLaMA"
+    },
+    {
+      "id": "llama-4",
+      "name": "LLaMA 4",
+      "year": 2025,
+      "family": "llama",
+      "parents": ["llama-3.2"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Next generation LLaMA"
+    },
+    {
+      "id": "code-llama",
+      "name": "Code Llama",
+      "year": 2023,
+      "family": "llama",
+      "parents": ["llama"],
+      "importance": 3,
+      "extinct": false,
+      "description": "LLaMA fine-tuned for coding"
+    },
+    {
+      "id": "phi-1",
+      "name": "Phi-1",
+      "year": 2023,
+      "family": "other",
+      "parents": ["transformers"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Microsoft's small language model"
+    },
+    {
+      "id": "phi-2",
+      "name": "Phi-2",
+      "year": 2023,
+      "family": "other",
+      "parents": ["phi-1"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Improved Phi"
+    },
+    {
+      "id": "phi-3",
+      "name": "Phi-3",
+      "year": 2024,
+      "family": "other",
+      "parents": ["phi-2"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Advanced small model"
+    },
+    {
+      "id": "phi-4",
+      "name": "Phi-4",
+      "year": 2025,
+      "family": "other",
+      "parents": ["phi-3"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Latest Phi"
+    },
+    {
+      "id": "command",
+      "name": "Command",
+      "year": 2023,
+      "family": "other",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Cohere's enterprise LLM"
+    },
+    {
+      "id": "command-r",
+      "name": "Command R",
+      "year": 2024,
+      "family": "other",
+      "parents": ["command"],
+      "importance": 3,
+      "extinct": false,
+      "description": "RAG-optimized Command"
+    },
+    {
+      "id": "command-r-plus",
+      "name": "Command R+",
+      "year": 2024,
+      "family": "other",
+      "parents": ["command-r"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Advanced Command R"
+    },
+    {
+      "id": "t5",
+      "name": "T5",
+      "year": 2019,
+      "family": "transformer",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Text-to-Text Transfer Transformer"
+    },
+    {
+      "id": "bart",
+      "name": "BART",
+      "year": 2019,
+      "family": "transformer",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Denoising autoencoder"
+    },
+    {
+      "id": "flan-t5",
+      "name": "FLAN-T5",
+      "year": 2022,
+      "family": "transformer",
+      "parents": ["t5"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Instruction-tuned T5"
+    },
+    {
+      "id": "clip",
+      "name": "CLIP",
+      "year": 2021,
+      "family": "multimodal",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Contrastive Language-Image Pre-training"
+    },
+    {
+      "id": "dall-e",
+      "name": "DALL-E",
+      "year": 2021,
+      "family": "multimodal",
+      "parents": ["clip"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Text-to-image generation"
+    },
+    {
+      "id": "flamingo",
+      "name": "Flamingo",
+      "year": 2022,
+      "family": "multimodal",
+      "parents": ["clip"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Visual language model"
+    },
+    {
+      "id": "gpt-4v",
+      "name": "GPT-4V",
+      "year": 2023,
+      "family": "multimodal",
+      "parents": ["gpt-4"],
+      "importance": 4,
+      "extinct": false,
+      "description": "GPT-4 with vision"
+    },
+    {
+      "id": "vit",
+      "name": "ViT",
+      "year": 2020,
+      "family": "cnn",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Vision Transformer"
+    },
+    {
+      "id": "deit",
+      "name": "DeiT",
+      "year": 2020,
+      "family": "cnn",
+      "parents": ["vit"],
+      "importance": 2,
+      "extinct": false,
+      "description": "Data-efficient ViT"
+    },
+    {
+      "id": "swin",
+      "name": "Swin Transformer",
+      "year": 2021,
+      "family": "cnn",
+      "parents": ["vit"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Shifted window transformer"
+    },
+    {
+      "id": "beit",
+      "name": "BEiT",
+      "year": 2021,
+      "family": "cnn",
+      "parents": ["vit"],
+      "importance": 2,
+      "extinct": false,
+      "description": "BERT pre-training for ViT"
+    },
+    {
+      "id": "ddpm",
+      "name": "DDPM",
+      "year": 2020,
+      "family": "diffusion",
+      "parents": ["backpropagation"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Denoising Diffusion Probabilistic Models"
+    },
+    {
+      "id": "dall-e-2",
+      "name": "DALL-E 2",
+      "year": 2022,
+      "family": "diffusion",
+      "parents": ["ddpm"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Advanced text-to-image"
+    },
+    {
+      "id": "stable-diffusion",
+      "name": "Stable Diffusion",
+      "year": 2022,
+      "family": "diffusion",
+      "parents": ["ddpm"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Open source diffusion model",
+      "breakthrough": true
+    },
+    {
+      "id": "sd-2.x",
+      "name": "SD 2.x",
+      "year": 2022,
+      "family": "diffusion",
+      "parents": ["stable-diffusion"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Stable Diffusion 2"
+    },
+    {
+      "id": "sdxl",
+      "name": "SDXL",
+      "year": 2023,
+      "family": "diffusion",
+      "parents": ["sd-2.x"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Stable Diffusion XL"
+    },
+    {
+      "id": "midjourney",
+      "name": "Midjourney",
+      "year": 2022,
+      "family": "diffusion",
+      "parents": ["ddpm"],
+      "importance": 5,
+      "extinct": false,
+      "description": "Artistic image generation"
+    },
+    {
+      "id": "sd-3",
+      "name": "SD 3",
+      "year": 2024,
+      "family": "diffusion",
+      "parents": ["sdxl"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Stable Diffusion 3"
+    },
+    {
+      "id": "sd-3.5",
+      "name": "SD 3.5",
+      "year": 2024,
+      "family": "diffusion",
+      "parents": ["sd-3"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Latest Stable Diffusion"
+    },
+    {
+      "id": "imagen-3",
+      "name": "Imagen 3",
+      "year": 2024,
+      "family": "diffusion",
+      "parents": ["ddpm"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Google's image generation"
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Alibaba's language model"
+    },
+    {
+      "id": "qwen-2",
+      "name": "Qwen-2",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["qwen"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Improved Qwen"
+    },
+    {
+      "id": "qwen-2.5",
+      "name": "Qwen-2.5",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["qwen-2"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Advanced Qwen"
+    },
+    {
+      "id": "qwen-2.5-max",
+      "name": "Qwen-2.5-Max",
+      "year": 2025,
+      "family": "chinese",
+      "parents": ["qwen-2.5"],
+      "importance": 4,
+      "extinct": false,
+      "description": "Largest Qwen"
+    },
+    {
+      "id": "ernie",
+      "name": "ERNIE",
+      "year": 2019,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Baidu's language model"
+    },
+    {
+      "id": "ernie-3.0",
+      "name": "ERNIE 3.0",
+      "year": 2021,
+      "family": "chinese",
+      "parents": ["ernie"],
+      "importance": 3,
+      "extinct": false,
+      "description": "ERNIE version 3"
+    },
+    {
+      "id": "ernie-bot",
+      "name": "ERNIE Bot",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["ernie-3.0"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Conversational ERNIE"
+    },
+    {
+      "id": "ernie-4.0",
+      "name": "ERNIE 4.0",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["ernie-bot"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Latest ERNIE"
+    },
+    {
+      "id": "doubao",
+      "name": "Doubao",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "ByteDance's AI model"
+    },
+    {
+      "id": "doubao-1.5-pro",
+      "name": "Doubao-1.5-Pro",
+      "year": 2025,
+      "family": "chinese",
+      "parents": ["doubao"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Advanced Doubao"
+    },
+    {
+      "id": "chatglm",
+      "name": "ChatGLM",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Zhipu's bilingual model"
+    },
+    {
+      "id": "glm-4",
+      "name": "GLM-4",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["chatglm"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Latest GLM"
+    },
+    {
+      "id": "yi",
+      "name": "Yi",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "01.AI's model"
+    },
+    {
+      "id": "yi-vl",
+      "name": "Yi-VL",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["yi"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Yi vision-language"
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 4,
+      "extinct": false,
+      "description": "DeepSeek's reasoning model"
+    },
+    {
+      "id": "deepseek-v2",
+      "name": "DeepSeek-V2",
+      "year": 2024,
+      "family": "chinese",
+      "parents": ["deepseek"],
+      "importance": 4,
+      "extinct": false,
+      "description": "MoE architecture"
+    },
+    {
+      "id": "deepseek-r1",
+      "name": "DeepSeek-R1",
+      "year": 2025,
+      "family": "chinese",
+      "parents": ["deepseek-v2"],
+      "importance": 5,
+      "extinct": false,
+      "description": "$6M training, open source reasoning",
+      "breakthrough": true
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "year": 2023,
+      "family": "chinese",
+      "parents": ["transformers"],
+      "importance": 3,
+      "extinct": false,
+      "description": "Moonshot's long context model"
+    }
+  ]
+}

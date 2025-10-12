@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(tree:*)",
+      "Bash(pip install:*)",
+      "Bash(source:*)",
+      "Bash(conda activate:*)",
+      "Bash(~/miniconda3/envs/ete3_env/bin/python /home/sevdeawesome/projects/tree_of_ai/approach_10_ete3_beautiful/code/create_beautiful_tree.py)",
+      "Bash(PYTHONPATH=/home/sevdeawesome/projects/tree_of_ai:$PYTHONPATH ~/miniconda3/envs/ete3_env/bin/python create_beautiful_tree.py)",
+      "Bash(~/miniconda3/envs/ete3_env/bin/pip install matplotlib)",
+      "Bash(export:*)",
+      "Bash(~/miniconda3/envs/ete3_env/bin/python create_beautiful_tree.py)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

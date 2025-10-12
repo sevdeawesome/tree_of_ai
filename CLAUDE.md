@@ -7,23 +7,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This project creates a publication-quality phylogenetic tree visualization of AI evolution from the Perceptron (1958) to modern AGI race (2025), styled like biological "Tree of Life" diagrams.
 
 **Visual Reference**: The `evolution.png` file shows the target aesthetic - a radial/semicircular biological phylogenetic tree with:
-- Timeline rings radiating from center
-- Color-coded major branches
-- Variable branch thickness by importance
-- Clean terminal node labeling
-- Extinction event markers
-- Professional scientific illustration quality
+- **Radial fountain explosion**: Narrow at bottom (1958), dramatically wide at top (2025)
+- **Organic sweeping curves**: Branches curve outward as they rise, not straight lines
+- **Temporal expansion**: Later periods 5-10x wider than early periods
+- **Dense branching**: Hundreds of species/models packed beautifully
+- **Color-coded families**: Easy visual distinction
+- **Timeline progression**: Clear vertical time flow
+- **Natural aesthetic**: Feels like a living organism growing and spreading
 
-## Project Goals & Approach
+The key insight: This is NOT a radial/circular layout - it's a **vertical fountain explosion** where branches spread horizontally as time progresses upward.
 
-The project requires experimenting with **at least 3-4 different visualization approaches**:
+## New Systematic Approach (Feb 2025)
 
-1. **ETE3 Toolkit** (Python) - Specialized for phylogenetic trees, radial layouts
-2. **Matplotlib/Plotly** (Python) - Polar coordinates for radial layout, custom styling
-3. **NetworkX + Custom Layout** (Python) - Fine-grained control over graph rendering
-4. **D3.js** - Interactive HTML fallback if Python approaches fail
+After exploring 10+ visualization approaches, we're building a proper **flexible system**:
 
-**Start with ETE3 first** - it's the most specialized tool for this task.
+### Two-Part Architecture:
+
+1. **Data Layer** (`ai_tree_data.json`):
+   - Clean JSON format with all 114 models
+   - Parent-child relationships
+   - Metadata (year, family, importance, extinct status)
+   - Families with colors and descriptions
+   - Breakthrough markers
+
+2. **Interactive Visualization Layer** (`tree_viewer.html`):
+   - Reads JSON data
+   - Dynamic controls for layout, style, density
+   - Multiple layout algorithms (radial fountain, vertical, horizontal, force-directed)
+   - Real-time adjustments (colors, fonts, curves, spacing)
+   - Filters (families, date ranges, extinct/active)
+   - Export functionality (SVG, PNG, high-res)
+
+### Why This Approach:
+
+- **Separation of concerns**: Data vs presentation
+- **Iterability**: Change data without touching code
+- **Flexibility**: Try different visual styles instantly
+- **Maintainability**: Easy to add new models
+- **Exportability**: Generate high-res versions in any style
 
 ## Project Structure
 

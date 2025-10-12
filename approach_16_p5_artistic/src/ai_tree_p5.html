@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evolution Tree - P5.js Artistic</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow-x: auto;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button.active {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+        
+        #p5-canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .artistic-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .artistic-btn {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .artistic-btn:hover, .artistic-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 AI Evolution Tree - Artistic P5.js</h1>
+        
+        <div class="controls">
+            <button id="toggleExtinct">💀 Toggle Extinct</button>
+            <button id="toggleAnimation">🎬 Toggle Animation</button>
+            <button id="resetView">🔄 Reset View</button>
+            <button id="exportImage">📸 Export Image</button>
+            <button id="randomizeColors">🌈 Randomize Colors</button>
+        </div>
+        
+        <div class="artistic-controls">
+            <button class="artistic-btn active" id="style-organic">🌿 Organic</button>
+            <button class="artistic-btn" id="style-geometric">📐 Geometric</button>
+            <button class="artistic-btn" id="style-abstract">🎭 Abstract</button>
+            <button class="artistic-btn" id="style-neural">🧠 Neural</button>
+        </div>
+        
+        <div id="p5-canvas"></div>
+        
+        <div class="stats" id="stats">
+            <p>🎯 <span id="totalModels">0</span> AI Models | 🌟 <span id="breakthroughs">0</span> Breakthroughs | 💀 <span id="extinct">0</span> Extinct</p>
+        </div>
+    </div>
+    
+    <div class="info-panel" id="infoPanel">
+        <h3 id="modelName">Model Info</h3>
+        <div id="modelDetails">Click on a node to see details</div>
+    </div>
+
+    <script>
+        // AI Models Data
+        const aiModels = [
+            // ROOT
+            {name: "Perceptron", parent: null, year: 1958, color: '#2F4F4F', importance: 5, branch_type: 'root', extinct: false},
+            
+            // SYMBOLIC AI BRANCH
+            {name: "Symbolic AI", parent: "Perceptron", year: 1960, color: '#8B7355', importance: 3, branch_type: 'symbolic', extinct: true},
+            {name: "ELIZA", parent: "Symbolic AI", year: 1966, color: '#8B7355', importance: 2, branch_type: 'symbolic', extinct: true},
+            {name: "Expert Systems", parent: "Symbolic AI", year: 1975, color: '#8B7355', importance: 2, branch_type: 'symbolic', extinct: true},
+            
+            // EARLY NEURAL NETWORKS
+            {name: "Backpropagation", parent: "Perceptron", year: 1986, color: '#FF6347', importance: 5, branch_type: 'innovation', extinct: false},
+            {name: "Neocognitron", parent: "Perceptron", year: 1980, color: '#DDA0DD', importance: 2, branch_type: 'cnn', extinct: true},
+            
+            // CNN BRANCH
+            {name: "CNNs", parent: "Backpropagation", year: 1989, color: '#9370DB', importance: 4, branch_type: 'cnn', extinct: false},
+            {name: "LeNet-1", parent: "CNNs", year: 1989, color: '#9370DB', importance: 2, branch_type: 'cnn', extinct: false},
+            {name: "LeNet-5", parent: "LeNet-1", year: 1998, color: '#9370DB', importance: 3, branch_type: 'cnn', extinct: false},
+            {name: "AlexNet", parent: "LeNet-5", year: 2012, color: '#9370DB', importance: 5, branch_type: 'cnn', extinct: false},
+            {name: "VGGNet", parent: "AlexNet", year: 2014, color: '#9370DB', importance: 3, branch_type: 'cnn', extinct: false},
+            {name: "GoogLeNet", parent: "AlexNet", year: 2014, color: '#9370DB', importance: 3, branch_type: 'cnn', extinct: false},
+            {name: "ResNet", parent: "AlexNet", year: 2015, color: '#9370DB', importance: 5, branch_type: 'cnn', extinct: false},
+            {name: "EfficientNet", parent: "ResNet", year: 2019, color: '#9370DB', importance: 3, branch_type: 'cnn', extinct: false},
+            
+            // RNN BRANCH
+            {name: "RNNs", parent: "Backpropagation", year: 1990, color: '#4169E1', importance: 3, branch_type: 'rnn', extinct: true},
+            {name: "LSTM", parent: "RNNs", year: 1997, color: '#4169E1', importance: 4, branch_type: 'rnn', extinct: true},
+            {name: "GRU", parent: "LSTM", year: 2014, color: '#4169E1', importance: 2, branch_type: 'rnn', extinct: true},
+            {name: "Seq2Seq", parent: "LSTM", year: 2014, color: '#4169E1', importance: 3, branch_type: 'rnn', extinct: true},
+            
+            // Word Embeddings
+            {name: "Word2Vec", parent: "RNNs", year: 2013, color: '#87CEEB', importance: 3, branch_type: 'embedding', extinct: false},
+            {name: "GloVe", parent: "Word2Vec", year: 2014, color: '#87CEEB', importance: 2, branch_type: 'embedding', extinct: false},
+            
+            // GAN BRANCH
+            {name: "GANs", parent: "Backpropagation", year: 2014, color: '#FFA500', importance: 4, branch_type: 'gan', extinct: true},
+            {name: "Progressive GAN", parent: "GANs", year: 2017, color: '#FFA500', importance: 2, branch_type: 'gan', extinct: true},
+            {name: "StyleGAN", parent: "Progressive GAN", year: 2018, color: '#FFA500', importance: 3, branch_type: 'gan', extinct: true},
+            {name: "StyleGAN2", parent: "StyleGAN", year: 2019, color: '#FFA500', importance: 3, branch_type: 'gan', extinct: true},
+            {name: "BigGAN", parent: "GANs", year: 2018, color: '#FFA500', importance: 2, branch_type: 'gan', extinct: true},
+            
+            // RL BRANCH
+            {name: "Q-Learning", parent: "Perceptron", year: 1989, color: '#228B22', importance: 3, branch_type: 'rl', extinct: false},
+            {name: "DQN", parent: "Q-Learning", year: 2013, color: '#228B22', importance: 3, branch_type: 'rl', extinct: false},
+            {name: "AlphaGo", parent: "DQN", year: 2016, color: '#228B22', importance: 5, branch_type: 'rl', extinct: false},
+            {name: "AlphaGo Zero", parent: "AlphaGo", year: 2017, color: '#228B22', importance: 4, branch_type: 'rl', extinct: false},
+            {name: "PPO", parent: "DQN", year: 2017, color: '#228B22', importance: 3, branch_type: 'rl', extinct: false},
+            {name: "RLHF", parent: "PPO", year: 2020, color: '#228B22', importance: 4, branch_type: 'rl', extinct: false},
+            
+            // TRANSFORMER REVOLUTION
+            {name: "Transformers", parent: "Backpropagation", year: 2017, color: '#00CED1', importance: 5, branch_type: 'transformer', extinct: false},
+            
+            // Encoder-Only Branch
+            {name: "BERT", parent: "Transformers", year: 2018, color: '#8B008B', importance: 5, branch_type: 'encoder', extinct: false},
+            {name: "RoBERTa", parent: "BERT", year: 2019, color: '#8B008B', importance: 3, branch_type: 'encoder', extinct: false},
+            {name: "ALBERT", parent: "BERT", year: 2019, color: '#8B008B', importance: 2, branch_type: 'encoder', extinct: false},
+            {name: "DistilBERT", parent: "BERT", year: 2019, color: '#8B008B', importance: 2, branch_type: 'encoder', extinct: false},
+            {name: "ELECTRA", parent: "BERT", year: 2020, color: '#8B008B', importance: 2, branch_type: 'encoder', extinct: false},
+            {name: "ModernBERT", parent: "BERT", year: 2024, color: '#8B008B', importance: 2, branch_type: 'encoder', extinct: false},
+            
+            // Decoder-Only Branch (GPT lineage)
+            {name: "GPT", parent: "Transformers", year: 2018, color: '#00BFFF', importance: 4, branch_type: 'decoder', extinct: false},
+            {name: "GPT-2", parent: "GPT", year: 2019, color: '#00BFFF', importance: 4, branch_type: 'decoder', extinct: false},
+            {name: "GPT-3", parent: "GPT-2", year: 2020, color: '#00BFFF', importance: 5, branch_type: 'decoder', extinct: false},
+            {name: "GPT-3.5", parent: "GPT-3", year: 2022, color: '#00BFFF', importance: 4, branch_type: 'decoder', extinct: false},
+            {name: "ChatGPT", parent: "GPT-3.5", year: 2022, color: '#00BFFF', importance: 5, branch_type: 'decoder', extinct: false},
+            {name: "GPT-4", parent: "ChatGPT", year: 2023, color: '#00BFFF', importance: 5, branch_type: 'decoder', extinct: false},
+            {name: "GPT-4 Turbo", parent: "GPT-4", year: 2023, color: '#00BFFF', importance: 3, branch_type: 'decoder', extinct: false},
+            {name: "GPT-4o", parent: "GPT-4 Turbo", year: 2024, color: '#00BFFF', importance: 4, branch_type: 'decoder', extinct: false},
+            {name: "o1", parent: "GPT-4o", year: 2024, color: '#00BFFF', importance: 5, branch_type: 'decoder', extinct: false},
+            
+            // Anthropic Claude Branch
+            {name: "Claude", parent: "Transformers", year: 2023, color: '#7B68EE', importance: 4, branch_type: 'claude', extinct: false},
+            {name: "Claude 2", parent: "Claude", year: 2023, color: '#7B68EE', importance: 3, branch_type: 'claude', extinct: false},
+            {name: "Claude 3 Haiku", parent: "Claude 2", year: 2024, color: '#7B68EE', importance: 3, branch_type: 'claude', extinct: false},
+            {name: "Claude 3 Sonnet", parent: "Claude 2", year: 2024, color: '#7B68EE', importance: 4, branch_type: 'claude', extinct: false},
+            {name: "Claude 3 Opus", parent: "Claude 2", year: 2024, color: '#7B68EE', importance: 4, branch_type: 'claude', extinct: false},
+            {name: "Claude 3.5 Sonnet", parent: "Claude 3 Sonnet", year: 2024, color: '#7B68EE', importance: 5, branch_type: 'claude', extinct: false},
+            {name: "Claude 4 Sonnet", parent: "Claude 3.5 Sonnet", year: 2025, color: '#7B68EE', importance: 5, branch_type: 'claude', extinct: false},
+            
+            // Google Branch
+            {name: "PaLM", parent: "Transformers", year: 2022, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "PaLM 2", parent: "PaLM", year: 2023, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "Gemini 1.0", parent: "PaLM 2", year: 2023, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "Gemini 1.5", parent: "Gemini 1.0", year: 2024, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "Gemini 2.0", parent: "Gemini 1.5", year: 2024, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "Gemini 2.5", parent: "Gemini 2.0", year: 2025, color: '#008B8B', importance: 4, branch_type: 'google', extinct: false},
+            {name: "Gemma", parent: "PaLM", year: 2024, color: '#20B2AA', importance: 3, branch_type: 'google', extinct: false},
+            {name: "Gemma 2", parent: "Gemma", year: 2024, color: '#20B2AA', importance: 3, branch_type: 'google', extinct: false},
+            
+            // Meta LLaMA Branch
+            {name: "LLaMA", parent: "Transformers", year: 2023, color: '#FF4500', importance: 5, branch_type: 'llama', extinct: false},
+            {name: "LLaMA 2", parent: "LLaMA", year: 2023, color: '#FF4500', importance: 4, branch_type: 'llama', extinct: false},
+            {name: "LLaMA 3", parent: "LLaMA 2", year: 2024, color: '#FF4500', importance: 5, branch_type: 'llama', extinct: false},
+            {name: "LLaMA 3.1", parent: "LLaMA 3", year: 2024, color: '#FF4500', importance: 4, branch_type: 'llama', extinct: false},
+            {name: "LLaMA 3.2", parent: "LLaMA 3.1", year: 2024, color: '#FF4500', importance: 3, branch_type: 'llama', extinct: false},
+            {name: "LLaMA 4", parent: "LLaMA 3.2", year: 2025, color: '#FF4500', importance: 4, branch_type: 'llama', extinct: false},
+            {name: "Code Llama", parent: "LLaMA", year: 2023, color: '#FF6347', importance: 3, branch_type: 'llama', extinct: false},
+            
+            // Microsoft Phi Branch
+            {name: "Phi-1", parent: "Transformers", year: 2023, color: '#C0C0C0', importance: 2, branch_type: 'microsoft', extinct: false},
+            {name: "Phi-2", parent: "Phi-1", year: 2023, color: '#C0C0C0', importance: 3, branch_type: 'microsoft', extinct: false},
+            {name: "Phi-3", parent: "Phi-2", year: 2024, color: '#C0C0C0', importance: 3, branch_type: 'microsoft', extinct: false},
+            {name: "Phi-4", parent: "Phi-3", year: 2025, color: '#C0C0C0', importance: 3, branch_type: 'microsoft', extinct: false},
+            
+            // Cohere Branch
+            {name: "Command", parent: "Transformers", year: 2023, color: '#CD7F32', importance: 3, branch_type: 'cohere', extinct: false},
+            {name: "Command R", parent: "Command", year: 2024, color: '#CD7F32', importance: 3, branch_type: 'cohere', extinct: false},
+            {name: "Command R+", parent: "Command R", year: 2024, color: '#CD7F32', importance: 3, branch_type: 'cohere', extinct: false},
+            
+            // Encoder-Decoder Branch
+            {name: "T5", parent: "Transformers", year: 2019, color: '#9ACD32', importance: 4, branch_type: 'enc-dec', extinct: false},
+            {name: "BART", parent: "Transformers", year: 2019, color: '#9ACD32', importance: 3, branch_type: 'enc-dec', extinct: false},
+            {name: "FLAN-T5", parent: "T5", year: 2022, color: '#9ACD32', importance: 3, branch_type: 'enc-dec', extinct: false},
+            
+            // Multimodal
+            {name: "CLIP", parent: "Transformers", year: 2021, color: '#DA70D6', importance: 4, branch_type: 'multimodal', extinct: false},
+            {name: "DALL-E", parent: "CLIP", year: 2021, color: '#DA70D6', importance: 4, branch_type: 'multimodal', extinct: false},
+            {name: "Flamingo", parent: "CLIP", year: 2022, color: '#DA70D6', importance: 3, branch_type: 'multimodal', extinct: false},
+            {name: "GPT-4V", parent: "GPT-4", year: 2023, color: '#DA70D6', importance: 4, branch_type: 'multimodal', extinct: false},
+            
+            // Vision Transformer
+            {name: "ViT", parent: "Transformers", year: 2020, color: '#BA55D3', importance: 4, branch_type: 'vit', extinct: false},
+            {name: "DeiT", parent: "ViT", year: 2020, color: '#BA55D3', importance: 2, branch_type: 'vit', extinct: false},
+            {name: "Swin Transformer", parent: "ViT", year: 2021, color: '#BA55D3', importance: 3, branch_type: 'vit', extinct: false},
+            {name: "BEiT", parent: "ViT", year: 2021, color: '#BA55D3', importance: 2, branch_type: 'vit', extinct: false},
+            
+            // DIFFUSION MODELS
+            {name: "DDPM", parent: "Backpropagation", year: 2020, color: '#FF1493', importance: 4, branch_type: 'diffusion', extinct: false},
+            {name: "DALL-E 2", parent: "DDPM", year: 2022, color: '#FF1493', importance: 5, branch_type: 'diffusion', extinct: false},
+            {name: "Stable Diffusion", parent: "DDPM", year: 2022, color: '#FF1493', importance: 5, branch_type: 'diffusion', extinct: false},
+            {name: "SD 2.x", name: "SD 2.x", parent: "Stable Diffusion", year: 2022, color: '#FF1493', importance: 3, branch_type: 'diffusion', extinct: false},
+            {name: "SDXL", name: "SDXL", parent: "SD 2.x", year: 2023, color: '#FF1493', importance: 4, branch_type: 'diffusion', extinct: false},
+            {name: "Midjourney", name: "Midjourney", parent: "DDPM", year: 2022, color: '#FF69B4', importance: 5, branch_type: 'diffusion', extinct: false},
+            {name: "SD 3", name: "SD 3", parent: "SDXL", year: 2024, color: '#FF1493', importance: 4, branch_type: 'diffusion', extinct: false},
+            {name: "SD 3.5", name: "SD 3.5", parent: "SD 3", year: 2024, color: '#FF1493', importance: 3, branch_type: 'diffusion', extinct: false},
+            {name: "Imagen 3", name: "Imagen 3", parent: "DDPM", year: 2024, color: '#FF1493', importance: 3, branch_type: 'diffusion', extinct: false},
+            
+            // CHINESE AI BRANCH
+            {name: "Qwen", parent: "Transformers", year: 2023, color: '#DC143C', importance: 4, branch_type: 'chinese', extinct: false},
+            {name: "Qwen-2", parent: "Qwen", year: 2024, color: '#DC143C', importance: 4, branch_type: 'chinese', extinct: false},
+            {name: "Qwen-2.5", parent: "Qwen-2", year: 2024, color: '#DC143C', importance: 4, branch_type: 'chinese', extinct: false},
+            {name: "Qwen-2.5-Max", parent: "Qwen-2.5", year: 2025, color: '#DC143C', importance: 4, branch_type: 'chinese', extinct: false},
+            
+            {name: "ERNIE", parent: "Transformers", year: 2019, color: '#FFD700', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "ERNIE 3.0", parent: "ERNIE", year: 2021, color: '#FFD700', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "ERNIE Bot", parent: "ERNIE 3.0", year: 2023, color: '#FFD700', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "ERNIE 4.0", parent: "ERNIE Bot", year: 2023, color: '#FFD700', importance: 3, branch_type: 'chinese', extinct: false},
+            
+            {name: "Doubao", parent: "Transformers", year: 2024, color: '#FF8C00', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "Doubao-1.5-Pro", parent: "Doubao", year: 2025, color: '#FF8C00', importance: 3, branch_type: 'chinese', extinct: false},
+            
+            {name: "ChatGLM", parent: "Transformers", year: 2023, color: '#B22222', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "GLM-4", parent: "ChatGLM", year: 2024, color: '#B22222', importance: 3, branch_type: 'chinese', extinct: false},
+            
+            {name: "Yi", parent: "Transformers", year: 2023, color: '#8B0000', importance: 3, branch_type: 'chinese', extinct: false},
+            {name: "Yi-VL", parent: "Yi", year: 2024, color: '#8B0000', importance: 3, branch_type: 'chinese', extinct: false},
+            
+            {name: "DeepSeek", parent: "Transformers", year: 2023, color: '#800000', importance: 4, branch_type: 'chinese', extinct: false},
+            {name: "DeepSeek-V2", parent: "DeepSeek", year: 2024, color: '#800000', importance: 4, branch_type: 'chinese', extinct: false},
+            {name: "DeepSeek-R1", parent: "DeepSeek-V2", year: 2025, color: '#800000', importance: 5, branch_type: 'chinese', extinct: false},
+            
+            {name: "Kimi", parent: "Transformers", year: 2023, color: '#CD5C5C', importance: 3, branch_type: 'chinese', extinct: false},
+        ];
+        
+        // Breakthrough markers
+        const breakthroughs = [
+            {name: "Backpropagation", year: 1986, emoji: "⭐"},
+            {name: "AlexNet", year: 2012, emoji: "💥"},
+            {name: "ResNet", year: 2015, emoji: "⭐"},
+            {name: "Transformers", year: 2017, emoji: "💥"},
+            {name: "GPT-3", year: 2020, emoji: "⭐"},
+            {name: "ChatGPT", year: 2022, emoji: "💥"},
+            {name: "DeepSeek-R1", year: 2025, emoji: "💥"}
+        ];
+        
+        // P5.js variables
+        let tree;
+        let showExtinct = true;
+        let animationEnabled = false;
+        let time = 0;
+        let artisticStyle = 'organic';
+        let nodes = [];
+        let edges = [];
+        
+        // Build tree structure
+        function buildTree() {
+            const tree = {};
+            const positions = {};
+            
+            // Initialize nodes
+            aiModels.forEach(model => {
+                tree[model.name] = {
+                    ...model,
+                    children: [],
+                    x: 0,
+                    y: 0,
+                    angle: 0,
+                    radius: 0
+                };
+            });
+            
+            // Build parent-child relationships
+            aiModels.forEach(model => {
+                if (model.parent && tree[model.parent]) {
+                    tree[model.parent].children.push(model.name);
+                }
+            });
+            
+            return tree;
+        }
+        
+        // Calculate positions
+        function calculatePositions(tree) {
+            const root = "Perceptron";
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Assign angles and radii
+            function assignPositions(nodeName, startAngle, angleSpan, level) {
+                if (!tree[nodeName]) return;
+                
+                const node = tree[nodeName];
+                const children = node.children;
+                
+                // Calculate position
+                const normalizedYear = (node.year - 1958) / (2025 - 1958);
+                const radius = 50 + normalizedYear * 200;
+                const angle = startAngle + angleSpan / 2;
+                
+                node.x = centerX + radius * cos(angle);
+                node.y = centerY + radius * sin(angle);
+                node.angle = angle;
+                node.radius = radius;
+                
+                // Recursively position children
+                if (children.length > 0) {
+                    const childAngleSpan = angleSpan / children.length;
+                    children.forEach((child, index) => {
+                        const childStartAngle = startAngle + index * childAngleSpan;
+                        assignPositions(child, childStartAngle, childAngleSpan, level + 1);
+                    });
+                }
+            }
+            
+            assignPositions(root, -PI/2, PI, 0);
+            return tree;
+        }
+        
+        // P5.js setup
+        function setup() {
+            createCanvas(1200, 800);
+            colorMode(HSB, 360, 100, 100, 100);
+            
+            tree = buildTree();
+            calculatePositions(tree);
+            
+            // Initialize nodes and edges arrays
+            nodes = [];
+            edges = [];
+            
+            aiModels.forEach(model => {
+                const node = tree[model.name];
+                if (node) {
+                    nodes.push({
+                        ...model,
+                        x: node.x,
+                        y: node.y,
+                        size: 10 + model.importance * 5
+                    });
+                    
+                    if (model.parent && tree[model.parent]) {
+                        const parent = tree[model.parent];
+                        edges.push({
+                            from: {x: parent.x, y: parent.y},
+                            to: {x: node.x, y: node.y},
+                            color: model.color,
+                            extinct: model.extinct
+                        });
+                    }
+                }
+            });
+            
+            // Update stats
+            updateStats();
+        }
+        
+        // P5.js draw
+        function draw() {
+            background(240, 10, 95); // Light background
+            
+            // Apply artistic style
+            switch(artisticStyle) {
+                case 'organic':
+                    drawOrganicStyle();
+                    break;
+                case 'geometric':
+                    drawGeometricStyle();
+                    break;
+                case 'abstract':
+                    drawAbstractStyle();
+                    break;
+                case 'neural':
+                    drawNeuralStyle();
+                    break;
+            }
+            
+            // Draw timeline rings
+            drawTimelineRings();
+            
+            // Draw edges
+            drawEdges();
+            
+            // Draw nodes
+            drawNodes();
+            
+            // Draw breakthrough markers
+            drawBreakthroughs();
+            
+            // Update animation
+            if (animationEnabled) {
+                time += 0.02;
+            }
+        }
+        
+        // Organic artistic style
+        function drawOrganicStyle() {
+            // Draw flowing background patterns
+            for (let i = 0; i < 20; i++) {
+                stroke(120, 20, 80, 10);
+                strokeWeight(1);
+                noFill();
+                
+                beginShape();
+                for (let j = 0; j < 50; j++) {
+                    const x = width * (j / 50);
+                    const y = height / 2 + sin(x * 0.01 + time + i) * 100;
+                    vertex(x, y);
+                }
+                endShape();
+            }
+        }
+        
+        // Geometric artistic style
+        function drawGeometricStyle() {
+            // Draw geometric patterns
+            stroke(200, 50, 90, 20);
+            strokeWeight(1);
+            noFill();
+            
+            for (let i = 0; i < 10; i++) {
+                const x = width / 2;
+                const y = height / 2;
+                const radius = 50 + i * 30;
+                
+                push();
+                translate(x, y);
+                rotate(time * 0.5 + i);
+                
+                beginShape();
+                for (let j = 0; j < 6; j++) {
+                    const angle = (TWO_PI / 6) * j;
+                    const px = radius * cos(angle);
+                    const py = radius * sin(angle);
+                    vertex(px, py);
+                }
+                endShape(CLOSE);
+                pop();
+            }
+        }
+        
+        // Abstract artistic style
+        function drawAbstractStyle() {
+            // Draw abstract patterns
+            for (let i = 0; i < 30; i++) {
+                const x = random(width);
+                const y = random(height);
+                const size = random(20, 80);
+                
+                fill(random(360), 60, 80, 15);
+                noStroke();
+                
+                push();
+                translate(x, y);
+                rotate(time * 0.1 + i);
+                
+                beginShape();
+                for (let j = 0; j < 8; j++) {
+                    const angle = (TWO_PI / 8) * j;
+                    const radius = size + sin(time + i) * 10;
+                    const px = radius * cos(angle);
+                    const py = radius * sin(angle);
+                    vertex(px, py);
+                }
+                endShape(CLOSE);
+                pop();
+            }
+        }
+        
+        // Neural artistic style
+        function drawNeuralStyle() {
+            // Draw neural network-like patterns
+            stroke(280, 40, 70, 15);
+            strokeWeight(2);
+            noFill();
+            
+            for (let i = 0; i < 50; i++) {
+                const x1 = random(width);
+                const y1 = random(height);
+                const x2 = x1 + random(-100, 100);
+                const y2 = y1 + random(-100, 100);
+                
+                line(x1, y1, x2, y2);
+                
+                // Add connection points
+                fill(280, 60, 90, 30);
+                noStroke();
+                circle(x1, y1, 4);
+                circle(x2, y2, 4);
+            }
+        }
+        
+        // Draw timeline rings
+        function drawTimelineRings() {
+            stroke(0, 0, 50, 30);
+            strokeWeight(1);
+            noFill();
+            
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            const years = [1960, 1970, 1980, 1990, 2000, 2010, 2020, 2025];
+            years.forEach(year => {
+                const normalizedYear = (year - 1958) / (2025 - 1958);
+                const radius = 50 + normalizedYear * 200;
+                
+                circle(centerX, centerY, radius * 2);
+                
+                // Add year labels
+                fill(0, 0, 70, 80);
+                noStroke();
+                textAlign(CENTER);
+                textSize(12);
+                text(year, centerX + radius + 20, centerY);
+            });
+        }
+        
+        // Draw edges
+        function drawEdges() {
+            edges.forEach(edge => {
+                if (!showExtinct && edge.extinct) return;
+                
+                stroke(edge.color);
+                strokeWeight(edge.extinct ? 1 : 3);
+                
+                if (artisticStyle === 'organic') {
+                    // Draw curved edges
+                    noFill();
+                    beginShape();
+                    vertex(edge.from.x, edge.from.y);
+                    
+                    const midX = (edge.from.x + edge.to.x) / 2;
+                    const midY = (edge.from.y + edge.to.y) / 2;
+                    const controlX = midX + sin(time + edge.from.x) * 20;
+                    const controlY = midY + cos(time + edge.from.y) * 20;
+                    
+                    quadraticVertex(controlX, controlY, edge.to.x, edge.to.y);
+                    endShape();
+                } else {
+                    // Draw straight edges
+                    line(edge.from.x, edge.from.y, edge.to.x, edge.to.y);
+                }
+            });
+        }
+        
+        // Draw nodes
+        function drawNodes() {
+            nodes.forEach(node => {
+                if (!showExtinct && node.extinct) return;
+                
+                const alpha = node.extinct ? 50 : 100;
+                
+                // Draw node
+                fill(node.color);
+                noStroke();
+                
+                if (artisticStyle === 'geometric') {
+                    // Draw as squares
+                    push();
+                    translate(node.x, node.y);
+                    rotate(time * 0.5);
+                    rectMode(CENTER);
+                    rect(0, 0, node.size, node.size);
+                    pop();
+                } else if (artisticStyle === 'abstract') {
+                    // Draw as triangles
+                    push();
+                    translate(node.x, node.y);
+                    rotate(time * 0.3);
+                    triangle(0, -node.size/2, -node.size/2, node.size/2, node.size/2, node.size/2);
+                    pop();
+                } else {
+                    // Draw as circles
+                    circle(node.x, node.y, node.size);
+                }
+                
+                // Add border
+                stroke(0, 0, 100, alpha);
+                strokeWeight(2);
+                noFill();
+                circle(node.x, node.y, node.size);
+                
+                // Add labels for important nodes
+                if (node.importance >= 4) {
+                    fill(0, 0, 30, alpha);
+                    noStroke();
+                    textAlign(CENTER);
+                    textSize(10);
+                    text(node.name, node.x, node.y + node.size + 15);
+                }
+            });
+        }
+        
+        // Draw breakthrough markers
+        function drawBreakthroughs() {
+            breakthroughs.forEach(breakthrough => {
+                const node = nodes.find(n => n.name === breakthrough.name);
+                if (node) {
+                    fill(60, 100, 100); // Gold color
+                    noStroke();
+                    textAlign(CENTER);
+                    textSize(20);
+                    text(breakthrough.emoji, node.x, node.y - node.size - 10);
+                }
+            });
+        }
+        
+        // Mouse interaction
+        function mousePressed() {
+            nodes.forEach(node => {
+                const distance = dist(mouseX, mouseY, node.x, node.y);
+                if (distance < node.size / 2) {
+                    showNodeInfo(node);
+                }
+            });
+        }
+        
+        // Show node information
+        function showNodeInfo(node) {
+            const infoPanel = document.getElementById('infoPanel');
+            const modelName = document.getElementById('modelName');
+            const modelDetails = document.getElementById('modelDetails');
+            
+            modelName.textContent = node.name;
+            
+            const breakthrough = breakthroughs.find(b => b.name === node.name);
+            const breakthroughText = breakthrough ? `<br><strong>🌟 Breakthrough:</strong> ${breakthrough.emoji} (${breakthrough.year})` : '';
+            
+            modelDetails.innerHTML = `
+                <p><strong>Year:</strong> ${node.year}</p>
+                <p><strong>Branch Type:</strong> ${node.branch_type}</p>
+                <p><strong>Importance:</strong> ${node.importance}/5</p>
+                <p><strong>Status:</strong> ${node.extinct ? '💀 Extinct' : '✅ Active'}</p>
+                ${breakthroughText}
+            `;
+            
+            infoPanel.style.display = 'block';
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalModels').textContent = aiModels.length;
+            document.getElementById('breakthroughs').textContent = breakthroughs.length;
+            document.getElementById('extinct').textContent = aiModels.filter(m => m.extinct).length;
+        }
+        
+        // Control functions
+        function toggleExtinct() {
+            showExtinct = !showExtinct;
+        }
+        
+        function toggleAnimation() {
+            animationEnabled = !animationEnabled;
+        }
+        
+        function resetView() {
+            time = 0;
+            animationEnabled = false;
+        }
+        
+        function exportImage() {
+            saveCanvas('ai_tree_p5_artistic', 'png');
+        }
+        
+        function randomizeColors() {
+            aiModels.forEach(model => {
+                model.color = color(random(360), 70, 80);
+            });
+            
+            // Rebuild tree
+            tree = buildTree();
+            calculatePositions(tree);
+            
+            // Update nodes and edges
+            nodes = [];
+            edges = [];
+            
+            aiModels.forEach(model => {
+                const node = tree[model.name];
+                if (node) {
+                    nodes.push({
+                        ...model,
+                        x: node.x,
+                        y: node.y,
+                        size: 10 + model.importance * 5
+                    });
+                    
+                    if (model.parent && tree[model.parent]) {
+                        const parent = tree[model.parent];
+                        edges.push({
+                            from: {x: parent.x, y: parent.y},
+                            to: {x: node.x, y: node.y},
+                            color: model.color,
+                            extinct: model.extinct
+                        });
+                    }
+                }
+            });
+        }
+        
+        function changeStyle(style) {
+            artisticStyle = style;
+            
+            // Update active button
+            document.querySelectorAll('.artistic-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`style-${style}`).classList.add('active');
+        }
+        
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('toggleExtinct').addEventListener('click', toggleExtinct);
+            document.getElementById('toggleAnimation').addEventListener('click', toggleAnimation);
+            document.getElementById('resetView').addEventListener('click', resetView);
+            document.getElementById('exportImage').addEventListener('click', exportImage);
+            document.getElementById('randomizeColors').addEventListener('click', randomizeColors);
+            
+            // Artistic style buttons
+            document.getElementById('style-organic').addEventListener('click', () => changeStyle('organic'));
+            document.getElementById('style-geometric').addEventListener('click', () => changeStyle('geometric'));
+            document.getElementById('style-abstract').addEventListener('click', () => changeStyle('abstract'));
+            document.getElementById('style-neural').addEventListener('click', () => changeStyle('neural'));
+        });
+    </script>
+</body>
+</html>
+

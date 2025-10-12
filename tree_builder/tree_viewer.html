@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Phylogenetic Tree - Interactive Viewer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@300;400;600&family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;600&family=Merriweather:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600&family=Roboto:wght@300;400;500&family=Montserrat:wght@300;400;600&family=EB+Garamond:wght@400;600&family=Libre+Baskerville:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            height: 100vh;
+        }
+
+        #controls {
+            width: 340px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+        }
+
+        #canvas {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background: #ffffff;
+        }
+
+        svg {
+            display: block;
+            cursor: grab;
+        }
+
+        svg:active {
+            cursor: grabbing;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .control-section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #5a6c7d;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+
+        select, input[type="range"], input[type="number"], input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+        }
+
+        input[type="number"] {
+            padding: 6px;
+        }
+
+        .range-value {
+            display: inline-block;
+            font-size: 11px;
+            color: #6c757d;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        .branch {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: opacity 0.3s;
+        }
+
+        .branch.extinct {
+            stroke-dasharray: 4,3;
+        }
+
+        .node circle {
+            cursor: move;
+            transition: all 0.2s;
+        }
+
+        .node circle:hover {
+            filter: drop-shadow(0 0 8px currentColor);
+            stroke-width: 2.5px !important;
+        }
+
+        .label {
+            pointer-events: none;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .timeline-ring {
+            fill: none;
+            stroke: #dee2e6;
+            stroke-width: 1;
+            opacity: 0.4;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timeline-ring:hover {
+            stroke: #007bff;
+            stroke-width: 2;
+            opacity: 0.8;
+        }
+
+        .timeline-ring.dragging {
+            stroke: #0056b3;
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+
+        .timeline-line {
+            stroke: #dee2e6;
+            stroke-width: 1.5;
+            cursor: ns-resize;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .timeline-line:hover {
+            stroke: #007bff;
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+
+        .timeline-line.dragging {
+            stroke: #0056b3;
+            stroke-width: 3;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            fill: #6c757d;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .title-text {
+            font-family: 'Crimson Text', serif;
+            fill: #2c3e50;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 12px;
+        }
+
+        .stats div {
+            margin: 4px 0;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            max-width: 250px;
+            z-index: 1000;
+        }
+
+        .section-help {
+            font-size: 11px;
+            color: #999;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        /* Color Palette Toolbox */
+        #colorPalette {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 280px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            z-index: 2000;
+            display: none;
+        }
+
+        #colorPalette.visible {
+            display: block;
+        }
+
+        #colorPalette h2 {
+            font-size: 16px;
+            padding: 15px;
+            margin: 0;
+            background: #007bff;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #colorPalette .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            margin: 0;
+        }
+
+        .family-color-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .family-color-item:last-child {
+            border-bottom: none;
+        }
+
+        .family-color-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .family-color-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .family-color-input {
+            width: 50px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-toggle-palette {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1999;
+        }
+
+        .btn-toggle-palette:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button class="btn-toggle-palette" onclick="toggleColorPalette()">🎨 Family Colors</button>
+
+    <div id="colorPalette">
+        <h2>
+            Family Colors
+            <button class="close-btn" onclick="toggleColorPalette()">×</button>
+        </h2>
+        <div id="familyColorList"></div>
+    </div>
+
+    <div id="app">
+        <div id="controls">
+            <h1>🌳 AI Tree Viewer</h1>
+
+            <div class="control-section">
+                <h3>Layout Algorithm</h3>
+                <div class="control-group">
+                    <label>Base Layout</label>
+                    <select id="layoutAlgorithm">
+                        <option value="radial">Radial (Biological Tree)</option>
+                        <option value="fountain">Fountain Explosion</option>
+                        <option value="vertical">Vertical Dendrogram</option>
+                        <option value="horizontal">Horizontal Tree</option>
+                    </select>
+                    <div class="section-help">Radial matches evolution.png!</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Canvas Dimensions</h3>
+                <div class="control-group">
+                    <label>Width (px)</label>
+                    <input type="number" id="canvasWidth" min="1200" max="10000" step="100" value="3000">
+                    <div class="section-help">Default: 3000px</div>
+                </div>
+                <div class="control-group">
+                    <label>Height (px)</label>
+                    <input type="number" id="canvasHeight" min="1000" max="10000" step="100" value="2400">
+                    <div class="section-help">Default: 2400px</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Foundational Layout</h3>
+                <div class="control-group">
+                    <label>Horizontal Spread</label>
+                    <input type="number" id="horizontalSpread" min="0.1" max="5" step="0.1" value="1.0">
+                    <div class="section-help">Base width multiplier (default: 1.0)</div>
+                </div>
+                <div class="control-group">
+                    <label>Vertical Spread</label>
+                    <input type="number" id="verticalSpread" min="0.1" max="5" step="0.1" value="1.0">
+                    <div class="section-help">Base height/radius multiplier (default: 1.0)</div>
+                </div>
+                <div class="control-group">
+                    <label>Center X Offset (px)</label>
+                    <input type="number" id="centerXOffset" min="-2000" max="2000" step="10" value="0">
+                    <div class="section-help">Shift tree left/right (default: 0)</div>
+                </div>
+                <div class="control-group">
+                    <label>Center Y Offset (px)</label>
+                    <input type="number" id="centerYOffset" min="-2000" max="2000" step="10" value="0">
+                    <div class="section-help">Shift tree up/down (default: 0)</div>
+                </div>
+            </div>
+
+            <div class="control-section" id="radialControls">
+                <h3>Radial Layout</h3>
+                <div class="control-group">
+                    <label>Angle Span (degrees)</label>
+                    <input type="number" id="angleSpan" min="90" max="360" step="10" value="180">
+                    <div class="section-help">180° = semicircle, 360° = full circle (default: 180)</div>
+                </div>
+                <div class="control-group">
+                    <label>Start Angle (degrees)</label>
+                    <input type="number" id="startAngle" min="-180" max="180" step="5" value="-90">
+                    <div class="section-help">Rotation offset (default: -90)</div>
+                </div>
+                <div class="control-group">
+                    <label>Inner Radius (px)</label>
+                    <input type="number" id="innerRadius" min="50" max="1000" step="10" value="100">
+                    <div class="section-help">Size of center/origin (default: 100)</div>
+                </div>
+                <div class="control-group">
+                    <label>Outer Radius (px)</label>
+                    <input type="number" id="outerRadius" min="200" max="3000" step="50" value="800">
+                    <div class="section-help">Size of outer edge/present (default: 800)</div>
+                </div>
+            </div>
+
+            <div class="control-section" id="fountainControls">
+                <h3>Fountain Explosion</h3>
+                <div class="control-group">
+                    <label>Width Expansion Factor</label>
+                    <input type="number" id="widthExpansion" min="1" max="50" step="0.5" value="10">
+                    <div class="section-help">How much wider top vs bottom (default: 10)</div>
+                </div>
+                <div class="control-group">
+                    <label>Expansion Curve</label>
+                    <select id="expansionCurve">
+                        <option value="linear">Linear</option>
+                        <option value="exponential">Exponential</option>
+                        <option value="logarithmic">Logarithmic</option>
+                        <option value="sigmoid">S-Curve (Sigmoid)</option>
+                    </select>
+                    <div class="section-help">How expansion accelerates over time</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Branch Behavior</h3>
+                <div class="control-group">
+                    <label>Branch Curve Style</label>
+                    <select id="curveStyle">
+                        <option value="bezier">Smooth Bezier</option>
+                        <option value="step">Right Angle Steps</option>
+                        <option value="diagonal">Straight Diagonal</option>
+                        <option value="organic">Organic (Varied)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Curve Intensity</label>
+                    <input type="number" id="curveStrength" min="0" max="3" step="0.1" value="0.5">
+                    <div class="section-help">How much branches curve, 0=straight (default: 0.5)</div>
+                </div>
+                <div class="control-group">
+                    <label>Node Repulsion</label>
+                    <input type="number" id="nodeRepulsion" min="0.1" max="10" step="0.1" value="1.0">
+                    <div class="section-help">Spacing between sibling branches (default: 1.0)</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Visual Style</h3>
+                <div class="control-group">
+                    <label>Branch Opacity</label>
+                    <input type="number" id="branchOpacity" min="0.1" max="1" step="0.05" value="0.7">
+                    <div class="section-help">0.1 to 1.0 (default: 0.7)</div>
+                </div>
+                <div class="control-group">
+                    <label>Branch Thickness</label>
+                    <input type="number" id="lineThickness" min="0.1" max="10" step="0.1" value="1.5">
+                    <div class="section-help">Stroke width multiplier (default: 1.5)</div>
+                </div>
+                <div class="control-group">
+                    <label>Node Size</label>
+                    <input type="number" id="nodeSize" min="0.1" max="10" step="0.1" value="1.5">
+                    <div class="section-help">Circle size multiplier (default: 1.5)</div>
+                </div>
+                <div class="control-group">
+                    <label>Background Color</label>
+                    <input type="color" id="bgColor" value="#ffffff">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Text Styling</h3>
+                <div class="control-group">
+                    <label>Font Family</label>
+                    <select id="fontFamily">
+                        <option value="'Crimson Text', serif">Crimson Text (Elegant Serif)</option>
+                        <option value="'Playfair Display', serif">Playfair Display (Classic Serif)</option>
+                        <option value="'EB Garamond', serif">EB Garamond (Traditional)</option>
+                        <option value="'Libre Baskerville', serif">Libre Baskerville (Refined)</option>
+                        <option value="'Lora', serif">Lora (Readable Serif)</option>
+                        <option value="'Merriweather', serif">Merriweather (Modern Serif)</option>
+                        <option value="'Inter', sans-serif">Inter (Clean Sans)</option>
+                        <option value="'Source Sans Pro', sans-serif">Source Sans Pro (Professional)</option>
+                        <option value="'Roboto', sans-serif">Roboto (Contemporary)</option>
+                        <option value="'Montserrat', sans-serif">Montserrat (Geometric)</option>
+                    </select>
+                    <div class="section-help">Choose label font style</div>
+                </div>
+                <div class="control-group">
+                    <label>Font Size (px)</label>
+                    <input type="number" id="fontSize" min="4" max="40" step="1" value="10">
+                    <div class="section-help">Label text size (default: 10)</div>
+                </div>
+                <div class="control-group">
+                    <label>Font Weight</label>
+                    <select id="fontWeight">
+                        <option value="300">Light (300)</option>
+                        <option value="400" selected>Regular (400)</option>
+                        <option value="500">Medium (500)</option>
+                        <option value="600">Semi-Bold (600)</option>
+                        <option value="700">Bold (700)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Text Opacity</label>
+                    <input type="number" id="textOpacity" min="0.1" max="1" step="0.05" value="0.95">
+                    <div class="section-help">Label opacity (default: 0.95)</div>
+                </div>
+                <div class="control-group">
+                    <label>Text Color (Default)</label>
+                    <input type="color" id="textColor" value="#2c3e50">
+                    <div class="section-help">Color for labels when not using family colors</div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useFamilyColors" checked>
+                    <label>Color Labels by Family</label>
+                </div>
+                <div class="control-group">
+                    <label>Label Positioning (Radial)</label>
+                    <select id="labelPositioning">
+                        <option value="node">At Node (Default)</option>
+                        <option value="perimeter">On Perimeter (Biological Style)</option>
+                        <option value="extended">Extended from Perimeter</option>
+                    </select>
+                    <div class="section-help">Radial mode only - position labels at nodes or floating on perimeter</div>
+                </div>
+                <div class="control-group">
+                    <label>Label Distance (Radial)</label>
+                    <input type="number" id="labelDistance" min="0" max="200" step="5" value="20">
+                    <div class="section-help">Distance from node when using perimeter positioning (default: 20)</div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="radialTextRotation" checked>
+                    <label>Rotate Text Radially</label>
+                </div>
+                <div class="section-help" style="margin-top: 8px;">
+                    💡 Use the "🎨 Family Colors" button to customize each family's color
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Filters & Display</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showExtinct" checked>
+                    <label>Show Extinct Models</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showLabels" checked>
+                    <label>Show Labels</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showTimeline" checked>
+                    <label>Show Timeline</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableDragging" checked>
+                    <label>Enable Node Dragging</label>
+                </div>
+                <div class="control-group">
+                    <label>Label Threshold</label>
+                    <input type="number" id="labelThreshold" min="1" max="5" step="1" value="3">
+                    <div class="section-help">Show labels for importance ≥ value (default: 3)</div>
+                </div>
+                <div class="control-group">
+                    <label>Year Range</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="yearMin" min="1958" max="2025" value="1958" style="width: 48%;">
+                        <input type="number" id="yearMax" min="1958" max="2025" value="2025" style="width: 48%;">
+                    </div>
+                    <div class="section-help">Filter models by year (default: 1958-2025)</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Actions</h3>
+                <button class="btn-primary" onclick="render()">🔄 Redraw Tree</button>
+                <button class="btn-secondary" onclick="resetSettings()">↺ Reset All Settings</button>
+                <button class="btn-secondary" onclick="exportSVG()">💾 Export SVG</button>
+                <button class="btn-secondary" onclick="exportPNG()">📷 Export PNG (Hi-Res)</button>
+            </div>
+
+            <div class="stats">
+                <div><strong>Total Models:</strong> <span id="totalModels">114</span></div>
+                <div><strong>Visible:</strong> <span id="visibleModels">-</span></div>
+                <div><strong>Families:</strong> <span id="totalFamilies">17</span></div>
+                <div style="margin-top: 8px; font-size: 10px; color: #999;">💡 In radial mode, drag timeline rings to adjust spacing</div>
+            </div>
+        </div>
+
+        <div id="canvas">
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded data
+        const data = {"metadata":{"title":"The Phylogenetic Tree of Artificial Intelligence","subtitle":"Evolution from Perceptron to AGI • 1958—2025","version":"1.0","totalModels":114,"yearRange":[1958,2025]},"families":{"root":{"label":"Origin","color":"#2F4F4F","description":"The foundational neural network"},"symbolic":{"label":"Symbolic AI","color":"#8B7355","description":"Early rule-based and logic systems","extinct":true},"neural":{"label":"Neural Networks","color":"#4682B4","description":"Basic neural network architectures"},"cnn":{"label":"Convolutional Neural Networks","color":"#9370DB","description":"Vision and image processing models"},"rnn":{"label":"Recurrent Neural Networks","color":"#4169E1","description":"Sequential data processing","extinct":true},"gan":{"label":"Generative Adversarial Networks","color":"#FFA500","description":"Image generation through adversarial training","extinct":true},"rl":{"label":"Reinforcement Learning","color":"#228B22","description":"Agent learning through rewards"},"transformer":{"label":"Transformers","color":"#00CED1","description":"Attention-based architecture revolution"},"encoder":{"label":"Encoder Transformers","color":"#8B008B","description":"BERT family - bidirectional encoding"},"decoder":{"label":"Decoder Transformers (GPT)","color":"#00BFFF","description":"GPT family - autoregressive generation"},"claude":{"label":"Claude (Anthropic)","color":"#7B68EE","description":"Constitutional AI approach"},"google":{"label":"Google AI","color":"#008B8B","description":"PaLM and Gemini family"},"llama":{"label":"LLaMA (Meta)","color":"#FF4500","description":"Open source transformer models"},"chinese":{"label":"Chinese AI","color":"#DC143C","description":"Chinese language models and AI systems"},"diffusion":{"label":"Diffusion Models","color":"#FF1493","description":"Image generation through denoising"},"multimodal":{"label":"Multimodal Models","color":"#DA70D6","description":"Vision-language models"},"other":{"label":"Other","color":"#C0C0C0","description":"Miscellaneous models"}},"models":[{"id":"perceptron","name":"Perceptron","year":1958,"family":"root","parents":[],"importance":5,"extinct":false,"description":"The first neural network algorithm, foundation of modern AI","breakthrough":true},{"id":"symbolic-ai","name":"Symbolic AI","year":1960,"family":"symbolic","parents":["perceptron"],"importance":3,"extinct":true,"description":"Rule-based AI systems"},{"id":"eliza","name":"ELIZA","year":1966,"family":"symbolic","parents":["symbolic-ai"],"importance":2,"extinct":true,"description":"Early chatbot using pattern matching"},{"id":"expert-systems","name":"Expert Systems","year":1975,"family":"symbolic","parents":["symbolic-ai"],"importance":2,"extinct":true,"description":"Domain-specific rule-based systems"},{"id":"backpropagation","name":"Backpropagation","year":1986,"family":"neural","parents":["perceptron"],"importance":5,"extinct":false,"description":"Training algorithm that enabled deep learning","breakthrough":true},{"id":"neocognitron","name":"Neocognitron","year":1980,"family":"cnn","parents":["perceptron"],"importance":2,"extinct":true,"description":"Early hierarchical neural network for vision"},{"id":"cnns","name":"CNNs","year":1989,"family":"cnn","parents":["backpropagation"],"importance":4,"extinct":false,"description":"Convolutional neural networks for image processing"},{"id":"lenet-1","name":"LeNet-1","year":1989,"family":"cnn","parents":["cnns"],"importance":2,"extinct":false,"description":"First practical CNN for digit recognition"},{"id":"lenet-5","name":"LeNet-5","year":1998,"family":"cnn","parents":["lenet-1"],"importance":3,"extinct":false,"description":"Improved CNN architecture"},{"id":"alexnet","name":"AlexNet","year":2012,"family":"cnn","parents":["lenet-5"],"importance":5,"extinct":false,"description":"Won ImageNet, sparked deep learning revolution","breakthrough":true},{"id":"vggnet","name":"VGGNet","year":2014,"family":"cnn","parents":["alexnet"],"importance":3,"extinct":false,"description":"Very deep CNN with small filters"},{"id":"googlenet","name":"GoogLeNet","year":2014,"family":"cnn","parents":["alexnet"],"importance":3,"extinct":false,"description":"Inception architecture with multiple scales"},{"id":"resnet","name":"ResNet","year":2015,"family":"cnn","parents":["alexnet"],"importance":5,"extinct":false,"description":"Residual connections enabling very deep networks","breakthrough":true},{"id":"efficientnet","name":"EfficientNet","year":2019,"family":"cnn","parents":["resnet"],"importance":3,"extinct":false,"description":"Optimized CNN architecture"},{"id":"rnns","name":"RNNs","year":1990,"family":"rnn","parents":["backpropagation"],"importance":3,"extinct":true,"description":"Networks for sequential data"},{"id":"lstm","name":"LSTM","year":1997,"family":"rnn","parents":["rnns"],"importance":4,"extinct":true,"description":"Long Short-Term Memory for long sequences"},{"id":"gru","name":"GRU","year":2014,"family":"rnn","parents":["lstm"],"importance":2,"extinct":true,"description":"Gated Recurrent Unit, simplified LSTM"},{"id":"seq2seq","name":"Seq2Seq","year":2014,"family":"rnn","parents":["lstm"],"importance":3,"extinct":true,"description":"Sequence to sequence learning"},{"id":"word2vec","name":"Word2Vec","year":2013,"family":"rnn","parents":["rnns"],"importance":3,"extinct":false,"description":"Word embeddings"},{"id":"glove","name":"GloVe","year":2014,"family":"rnn","parents":["word2vec"],"importance":2,"extinct":false,"description":"Global vectors for word representation"},{"id":"gans","name":"GANs","year":2014,"family":"gan","parents":["backpropagation"],"importance":4,"extinct":true,"description":"Generative Adversarial Networks"},{"id":"progressive-gan","name":"Progressive GAN","year":2017,"family":"gan","parents":["gans"],"importance":2,"extinct":true,"description":"Progressive growing of GANs"},{"id":"stylegan","name":"StyleGAN","year":2018,"family":"gan","parents":["progressive-gan"],"importance":3,"extinct":true,"description":"Style-based GAN architecture"},{"id":"stylegan2","name":"StyleGAN2","year":2019,"family":"gan","parents":["stylegan"],"importance":3,"extinct":true,"description":"Improved StyleGAN"},{"id":"biggan","name":"BigGAN","year":2018,"family":"gan","parents":["gans"],"importance":2,"extinct":true,"description":"Large scale GAN training"},{"id":"q-learning","name":"Q-Learning","year":1989,"family":"rl","parents":["perceptron"],"importance":3,"extinct":false,"description":"Foundational reinforcement learning algorithm"},{"id":"dqn","name":"DQN","year":2013,"family":"rl","parents":["q-learning"],"importance":3,"extinct":false,"description":"Deep Q-Network combining RL with deep learning"},{"id":"alphago","name":"AlphaGo","year":2016,"family":"rl","parents":["dqn"],"importance":5,"extinct":false,"description":"Defeated world Go champion","breakthrough":true},{"id":"alphago-zero","name":"AlphaGo Zero","year":2017,"family":"rl","parents":["alphago"],"importance":4,"extinct":false,"description":"Self-taught Go playing"},{"id":"ppo","name":"PPO","year":2017,"family":"rl","parents":["dqn"],"importance":3,"extinct":false,"description":"Proximal Policy Optimization"},{"id":"rlhf","name":"RLHF","year":2020,"family":"rl","parents":["ppo"],"importance":4,"extinct":false,"description":"Reinforcement Learning from Human Feedback"},{"id":"transformers","name":"Transformers","year":2017,"family":"transformer","parents":["backpropagation"],"importance":5,"extinct":false,"description":"Attention is All You Need - revolutionary architecture","breakthrough":true},{"id":"bert","name":"BERT","year":2018,"family":"encoder","parents":["transformers"],"importance":5,"extinct":false,"description":"Bidirectional Encoder Representations"},{"id":"roberta","name":"RoBERTa","year":2019,"family":"encoder","parents":["bert"],"importance":3,"extinct":false,"description":"Robustly optimized BERT"},{"id":"albert","name":"ALBERT","year":2019,"family":"encoder","parents":["bert"],"importance":2,"extinct":false,"description":"A Lite BERT"},{"id":"distilbert","name":"DistilBERT","year":2019,"family":"encoder","parents":["bert"],"importance":2,"extinct":false,"description":"Distilled BERT"},{"id":"electra","name":"ELECTRA","year":2020,"family":"encoder","parents":["bert"],"importance":2,"extinct":false,"description":"Efficiently Learning an Encoder"},{"id":"modernbert","name":"ModernBERT","year":2024,"family":"encoder","parents":["bert"],"importance":2,"extinct":false,"description":"Updated BERT architecture"},{"id":"gpt","name":"GPT","year":2018,"family":"decoder","parents":["transformers"],"importance":4,"extinct":false,"description":"Generative Pre-trained Transformer"},{"id":"gpt-2","name":"GPT-2","year":2019,"family":"decoder","parents":["gpt"],"importance":4,"extinct":false,"description":"Larger GPT with impressive generation"},{"id":"gpt-3","name":"GPT-3","year":2020,"family":"decoder","parents":["gpt-2"],"importance":5,"extinct":false,"description":"175B parameters, few-shot learning","breakthrough":true},{"id":"gpt-3.5","name":"GPT-3.5","year":2022,"family":"decoder","parents":["gpt-3"],"importance":4,"extinct":false,"description":"Improved GPT-3"},{"id":"chatgpt","name":"ChatGPT","year":2022,"family":"decoder","parents":["gpt-3.5"],"importance":5,"extinct":false,"description":"Conversational AI that went viral","breakthrough":true},{"id":"gpt-4","name":"GPT-4","year":2023,"family":"decoder","parents":["chatgpt"],"importance":5,"extinct":false,"description":"Multimodal large language model"},{"id":"gpt-4-turbo","name":"GPT-4 Turbo","year":2023,"family":"decoder","parents":["gpt-4"],"importance":3,"extinct":false,"description":"Faster, cheaper GPT-4"},{"id":"gpt-4o","name":"GPT-4o","year":2024,"family":"decoder","parents":["gpt-4-turbo"],"importance":4,"extinct":false,"description":"Omni model with vision and audio"},{"id":"o1","name":"o1","year":2024,"family":"decoder","parents":["gpt-4o"],"importance":5,"extinct":false,"description":"Reasoning-focused model"},{"id":"claude","name":"Claude","year":2023,"family":"claude","parents":["transformers"],"importance":4,"extinct":false,"description":"Anthropic's constitutional AI"},{"id":"claude-2","name":"Claude 2","year":2023,"family":"claude","parents":["claude"],"importance":3,"extinct":false,"description":"Improved Claude"},{"id":"claude-3-haiku","name":"Claude 3 Haiku","year":2024,"family":"claude","parents":["claude-2"],"importance":3,"extinct":false,"description":"Fast, compact Claude"},{"id":"claude-3-sonnet","name":"Claude 3 Sonnet","year":2024,"family":"claude","parents":["claude-2"],"importance":4,"extinct":false,"description":"Balanced Claude"},{"id":"claude-3-opus","name":"Claude 3 Opus","year":2024,"family":"claude","parents":["claude-2"],"importance":4,"extinct":false,"description":"Most capable Claude"},{"id":"claude-3.5-sonnet","name":"Claude 3.5 Sonnet","year":2024,"family":"claude","parents":["claude-3-sonnet"],"importance":5,"extinct":false,"description":"Advanced Claude Sonnet"},{"id":"claude-4-sonnet","name":"Claude 4 Sonnet","year":2025,"family":"claude","parents":["claude-3.5-sonnet"],"importance":5,"extinct":false,"description":"Next generation Claude"},{"id":"palm","name":"PaLM","year":2022,"family":"google","parents":["transformers"],"importance":4,"extinct":false,"description":"Pathways Language Model from Google"},{"id":"palm-2","name":"PaLM 2","year":2023,"family":"google","parents":["palm"],"importance":4,"extinct":false,"description":"Improved PaLM"},{"id":"gemini-1.0","name":"Gemini 1.0","year":2023,"family":"google","parents":["palm-2"],"importance":4,"extinct":false,"description":"Google's multimodal AI"},{"id":"gemini-1.5","name":"Gemini 1.5","year":2024,"family":"google","parents":["gemini-1.0"],"importance":4,"extinct":false,"description":"Long context Gemini"},{"id":"gemini-2.0","name":"Gemini 2.0","year":2024,"family":"google","parents":["gemini-1.5"],"importance":4,"extinct":false,"description":"Advanced Gemini"},{"id":"gemini-2.5","name":"Gemini 2.5","year":2025,"family":"google","parents":["gemini-2.0"],"importance":4,"extinct":false,"description":"Latest Gemini"},{"id":"gemma","name":"Gemma","year":2024,"family":"google","parents":["palm"],"importance":3,"extinct":false,"description":"Open source Google model"},{"id":"gemma-2","name":"Gemma 2","year":2024,"family":"google","parents":["gemma"],"importance":3,"extinct":false,"description":"Improved Gemma"},{"id":"llama","name":"LLaMA","year":2023,"family":"llama","parents":["transformers"],"importance":5,"extinct":false,"description":"Meta's open source LLM","breakthrough":true},{"id":"llama-2","name":"LLaMA 2","year":2023,"family":"llama","parents":["llama"],"importance":4,"extinct":false,"description":"Improved LLaMA"},{"id":"llama-3","name":"LLaMA 3","year":2024,"family":"llama","parents":["llama-2"],"importance":5,"extinct":false,"description":"Major LLaMA upgrade"},{"id":"llama-3.1","name":"LLaMA 3.1","year":2024,"family":"llama","parents":["llama-3"],"importance":4,"extinct":false,"description":"Extended context LLaMA"},{"id":"llama-3.2","name":"LLaMA 3.2","year":2024,"family":"llama","parents":["llama-3.1"],"importance":3,"extinct":false,"description":"Multimodal LLaMA"},{"id":"llama-4","name":"LLaMA 4","year":2025,"family":"llama","parents":["llama-3.2"],"importance":4,"extinct":false,"description":"Next generation LLaMA"},{"id":"code-llama","name":"Code Llama","year":2023,"family":"llama","parents":["llama"],"importance":3,"extinct":false,"description":"LLaMA fine-tuned for coding"},{"id":"phi-1","name":"Phi-1","year":2023,"family":"other","parents":["transformers"],"importance":2,"extinct":false,"description":"Microsoft's small language model"},{"id":"phi-2","name":"Phi-2","year":2023,"family":"other","parents":["phi-1"],"importance":3,"extinct":false,"description":"Improved Phi"},{"id":"phi-3","name":"Phi-3","year":2024,"family":"other","parents":["phi-2"],"importance":3,"extinct":false,"description":"Advanced small model"},{"id":"phi-4","name":"Phi-4","year":2025,"family":"other","parents":["phi-3"],"importance":3,"extinct":false,"description":"Latest Phi"},{"id":"command","name":"Command","year":2023,"family":"other","parents":["transformers"],"importance":3,"extinct":false,"description":"Cohere's enterprise LLM"},{"id":"command-r","name":"Command R","year":2024,"family":"other","parents":["command"],"importance":3,"extinct":false,"description":"RAG-optimized Command"},{"id":"command-r-plus","name":"Command R+","year":2024,"family":"other","parents":["command-r"],"importance":3,"extinct":false,"description":"Advanced Command R"},{"id":"t5","name":"T5","year":2019,"family":"transformer","parents":["transformers"],"importance":4,"extinct":false,"description":"Text-to-Text Transfer Transformer"},{"id":"bart","name":"BART","year":2019,"family":"transformer","parents":["transformers"],"importance":3,"extinct":false,"description":"Denoising autoencoder"},{"id":"flan-t5","name":"FLAN-T5","year":2022,"family":"transformer","parents":["t5"],"importance":3,"extinct":false,"description":"Instruction-tuned T5"},{"id":"clip","name":"CLIP","year":2021,"family":"multimodal","parents":["transformers"],"importance":4,"extinct":false,"description":"Contrastive Language-Image Pre-training"},{"id":"dall-e","name":"DALL-E","year":2021,"family":"multimodal","parents":["clip"],"importance":4,"extinct":false,"description":"Text-to-image generation"},{"id":"flamingo","name":"Flamingo","year":2022,"family":"multimodal","parents":["clip"],"importance":3,"extinct":false,"description":"Visual language model"},{"id":"gpt-4v","name":"GPT-4V","year":2023,"family":"multimodal","parents":["gpt-4"],"importance":4,"extinct":false,"description":"GPT-4 with vision"},{"id":"vit","name":"ViT","year":2020,"family":"cnn","parents":["transformers"],"importance":4,"extinct":false,"description":"Vision Transformer"},{"id":"deit","name":"DeiT","year":2020,"family":"cnn","parents":["vit"],"importance":2,"extinct":false,"description":"Data-efficient ViT"},{"id":"swin","name":"Swin Transformer","year":2021,"family":"cnn","parents":["vit"],"importance":3,"extinct":false,"description":"Shifted window transformer"},{"id":"beit","name":"BEiT","year":2021,"family":"cnn","parents":["vit"],"importance":2,"extinct":false,"description":"BERT pre-training for ViT"},{"id":"ddpm","name":"DDPM","year":2020,"family":"diffusion","parents":["backpropagation"],"importance":4,"extinct":false,"description":"Denoising Diffusion Probabilistic Models"},{"id":"dall-e-2","name":"DALL-E 2","year":2022,"family":"diffusion","parents":["ddpm"],"importance":5,"extinct":false,"description":"Advanced text-to-image"},{"id":"stable-diffusion","name":"Stable Diffusion","year":2022,"family":"diffusion","parents":["ddpm"],"importance":5,"extinct":false,"description":"Open source diffusion model","breakthrough":true},{"id":"sd-2.x","name":"SD 2.x","year":2022,"family":"diffusion","parents":["stable-diffusion"],"importance":3,"extinct":false,"description":"Stable Diffusion 2"},{"id":"sdxl","name":"SDXL","year":2023,"family":"diffusion","parents":["sd-2.x"],"importance":4,"extinct":false,"description":"Stable Diffusion XL"},{"id":"midjourney","name":"Midjourney","year":2022,"family":"diffusion","parents":["ddpm"],"importance":5,"extinct":false,"description":"Artistic image generation"},{"id":"sd-3","name":"SD 3","year":2024,"family":"diffusion","parents":["sdxl"],"importance":4,"extinct":false,"description":"Stable Diffusion 3"},{"id":"sd-3.5","name":"SD 3.5","year":2024,"family":"diffusion","parents":["sd-3"],"importance":3,"extinct":false,"description":"Latest Stable Diffusion"},{"id":"imagen-3","name":"Imagen 3","year":2024,"family":"diffusion","parents":["ddpm"],"importance":3,"extinct":false,"description":"Google's image generation"},{"id":"qwen","name":"Qwen","year":2023,"family":"chinese","parents":["transformers"],"importance":4,"extinct":false,"description":"Alibaba's language model"},{"id":"qwen-2","name":"Qwen-2","year":2024,"family":"chinese","parents":["qwen"],"importance":4,"extinct":false,"description":"Improved Qwen"},{"id":"qwen-2.5","name":"Qwen-2.5","year":2024,"family":"chinese","parents":["qwen-2"],"importance":4,"extinct":false,"description":"Advanced Qwen"},{"id":"qwen-2.5-max","name":"Qwen-2.5-Max","year":2025,"family":"chinese","parents":["qwen-2.5"],"importance":4,"extinct":false,"description":"Largest Qwen"},{"id":"ernie","name":"ERNIE","year":2019,"family":"chinese","parents":["transformers"],"importance":3,"extinct":false,"description":"Baidu's language model"},{"id":"ernie-3.0","name":"ERNIE 3.0","year":2021,"family":"chinese","parents":["ernie"],"importance":3,"extinct":false,"description":"ERNIE version 3"},{"id":"ernie-bot","name":"ERNIE Bot","year":2023,"family":"chinese","parents":["ernie-3.0"],"importance":3,"extinct":false,"description":"Conversational ERNIE"},{"id":"ernie-4.0","name":"ERNIE 4.0","year":2023,"family":"chinese","parents":["ernie-bot"],"importance":3,"extinct":false,"description":"Latest ERNIE"},{"id":"doubao","name":"Doubao","year":2024,"family":"chinese","parents":["transformers"],"importance":3,"extinct":false,"description":"ByteDance's AI model"},{"id":"doubao-1.5-pro","name":"Doubao-1.5-Pro","year":2025,"family":"chinese","parents":["doubao"],"importance":3,"extinct":false,"description":"Advanced Doubao"},{"id":"chatglm","name":"ChatGLM","year":2023,"family":"chinese","parents":["transformers"],"importance":3,"extinct":false,"description":"Zhipu's bilingual model"},{"id":"glm-4","name":"GLM-4","year":2024,"family":"chinese","parents":["chatglm"],"importance":3,"extinct":false,"description":"Latest GLM"},{"id":"yi","name":"Yi","year":2023,"family":"chinese","parents":["transformers"],"importance":3,"extinct":false,"description":"01.AI's model"},{"id":"yi-vl","name":"Yi-VL","year":2024,"family":"chinese","parents":["yi"],"importance":3,"extinct":false,"description":"Yi vision-language"},{"id":"deepseek","name":"DeepSeek","year":2023,"family":"chinese","parents":["transformers"],"importance":4,"extinct":false,"description":"DeepSeek's reasoning model"},{"id":"deepseek-v2","name":"DeepSeek-V2","year":2024,"family":"chinese","parents":["deepseek"],"importance":4,"extinct":false,"description":"MoE architecture"},{"id":"deepseek-r1","name":"DeepSeek-R1","year":2025,"family":"chinese","parents":["deepseek-v2"],"importance":5,"extinct":false,"description":"$6M training, open source reasoning","breakthrough":true},{"id":"kimi","name":"Kimi","year":2023,"family":"chinese","parents":["transformers"],"importance":3,"extinct":false,"description":"Moonshot's long context model"}]};
+
+        let currentConfig = {};
+        let nodePositions = new Map();
+        let yearRadii = {}; // Store custom radii for years in radial mode
+        let familyColors = {}; // Store custom family colors
+
+        // Initialize family colors from data
+        Object.keys(data.families).forEach(key => {
+            familyColors[key] = data.families[key].color;
+        });
+
+        initializeColorPalette();
+        setupEventListeners();
+        render();
+
+        function setupEventListeners() {
+            // Auto-redraw on any input change
+            document.querySelectorAll('select, input[type="checkbox"], input[type="number"]').forEach(el => {
+                el.addEventListener('change', render);
+            });
+        }
+
+        function getConfig() {
+            return {
+                layout: document.getElementById('layoutAlgorithm').value,
+                width: parseInt(document.getElementById('canvasWidth').value),
+                height: parseInt(document.getElementById('canvasHeight').value),
+                expansion: parseFloat(document.getElementById('widthExpansion').value),
+                expansionCurve: document.getElementById('expansionCurve').value,
+                curveStrength: parseFloat(document.getElementById('curveStrength').value),
+                curveStyle: document.getElementById('curveStyle').value,
+                branchOpacity: parseFloat(document.getElementById('branchOpacity').value),
+                lineThickness: parseFloat(document.getElementById('lineThickness').value),
+                nodeSize: parseFloat(document.getElementById('nodeSize').value),
+                fontSize: parseInt(document.getElementById('fontSize').value),
+                showExtinct: document.getElementById('showExtinct').checked,
+                showLabels: document.getElementById('showLabels').checked,
+                showTimeline: document.getElementById('showTimeline').checked,
+                enableDragging: document.getElementById('enableDragging').checked,
+                labelThreshold: parseInt(document.getElementById('labelThreshold').value),
+                bgColor: document.getElementById('bgColor').value,
+                horizontalSpread: parseFloat(document.getElementById('horizontalSpread').value),
+                verticalSpread: parseFloat(document.getElementById('verticalSpread').value),
+                centerXOffset: parseInt(document.getElementById('centerXOffset').value),
+                centerYOffset: parseInt(document.getElementById('centerYOffset').value),
+                nodeRepulsion: parseFloat(document.getElementById('nodeRepulsion').value),
+                yearMin: parseInt(document.getElementById('yearMin').value),
+                yearMax: parseInt(document.getElementById('yearMax').value),
+                angleSpan: parseInt(document.getElementById('angleSpan').value),
+                startAngle: parseInt(document.getElementById('startAngle').value),
+                innerRadius: parseInt(document.getElementById('innerRadius').value),
+                outerRadius: parseInt(document.getElementById('outerRadius').value),
+                fontFamily: document.getElementById('fontFamily').value,
+                fontWeight: document.getElementById('fontWeight').value,
+                textOpacity: parseFloat(document.getElementById('textOpacity').value),
+                textColor: document.getElementById('textColor').value,
+                useFamilyColors: document.getElementById('useFamilyColors').checked
+            };
+        }
+
+        function render() {
+            currentConfig = getConfig();
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '<div class="tooltip" id="tooltip"></div>';
+            canvas.style.background = currentConfig.bgColor;
+
+            const svg = d3.select('#canvas')
+                .append('svg')
+                .attr('width', currentConfig.width)
+                .attr('height', currentConfig.height);
+
+            // Build tree structure
+            const nodeMap = new Map();
+            const filteredModels = data.models.filter(m =>
+                m.year >= currentConfig.yearMin && m.year <= currentConfig.yearMax
+            );
+
+            filteredModels.forEach(m => {
+                nodeMap.set(m.id, {...m, children: []});
+            });
+
+            filteredModels.forEach(m => {
+                m.parents.forEach(parentId => {
+                    if (nodeMap.has(parentId)) {
+                        nodeMap.get(parentId).children.push(nodeMap.get(m.id));
+                    }
+                });
+            });
+
+            const roots = filteredModels.filter(m => m.parents.length === 0 || !m.parents.some(p => nodeMap.has(p)))
+                .map(m => nodeMap.get(m.id));
+
+            // Apply layout
+            roots.forEach(root => {
+                if (currentConfig.layout === 'radial') {
+                    layoutRadial(root, currentConfig);
+                } else if (currentConfig.layout === 'fountain') {
+                    layoutFountain(root, currentConfig);
+                } else if (currentConfig.layout === 'vertical') {
+                    layoutVertical(root, currentConfig);
+                } else if (currentConfig.layout === 'horizontal') {
+                    layoutHorizontal(root, currentConfig);
+                }
+            });
+
+            // Collect all nodes
+            const allNodes = [];
+            function collect(node) {
+                if (!node) return;
+                if (nodePositions.has(node.id)) {
+                    const pos = nodePositions.get(node.id);
+                    node.x = pos.x;
+                    node.y = pos.y;
+                }
+                allNodes.push(node);
+                node.children.forEach(collect);
+            }
+            roots.forEach(collect);
+
+            const visibleNodes = currentConfig.showExtinct ? allNodes : allNodes.filter(n => !n.extinct);
+
+            // Draw timeline
+            if (currentConfig.showTimeline) {
+                if (currentConfig.layout === 'radial') {
+                    drawTimelineRadial(svg, currentConfig, allNodes);
+                } else {
+                    drawTimelineLinear(svg, currentConfig, allNodes);
+                }
+            }
+
+            // Draw branches
+            drawBranches(svg, visibleNodes, currentConfig);
+
+            // Draw nodes
+            drawNodes(svg, visibleNodes, currentConfig);
+
+            // Draw labels
+            if (currentConfig.showLabels) {
+                drawLabels(svg, visibleNodes, currentConfig);
+            }
+
+            document.getElementById('visibleModels').textContent = visibleNodes.length;
+        }
+
+        function layoutRadial(root, config) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+
+            // Map years to radius
+            const radiusScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
+
+            function layout(node, angleStart, angleEnd) {
+                // Get radius for this year
+                let radius = yearRadii[node.year] || radiusScale(node.year);
+
+                const children = node.children;
+                if (children.length === 0) {
+                    // Leaf node - place at midpoint of angle range
+                    node.angle = (angleStart + angleEnd) / 2;
+                } else {
+                    // Internal node - distribute children across angle range
+                    const totalDescendants = children.reduce((sum, c) => sum + countDescendants(c), 0);
+                    let currentAngle = angleStart;
+
+                    children.forEach(child => {
+                        const childDescendants = countDescendants(child);
+                        const childAngleRange = ((angleEnd - angleStart) * childDescendants / totalDescendants) * config.horizontalSpread * config.nodeRepulsion;
+                        layout(child, currentAngle, currentAngle + childAngleRange);
+                        currentAngle += childAngleRange;
+                    });
+
+                    // Place parent at average angle of children
+                    node.angle = d3.mean(children, c => c.angle);
+                }
+
+                // Convert polar to cartesian
+                const angleRad = (node.angle + config.startAngle) * Math.PI / 180;
+                node.x = centerX + radius * Math.cos(angleRad);
+                node.y = centerY + radius * Math.sin(angleRad);
+                node.radius = radius; // Store for timeline drawing
+            }
+
+            layout(root, 0, config.angleSpan);
+        }
+
+        function layoutFountain(root, config) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+
+            const baseYScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([config.height - 150, 200]);
+
+            function layout(node, xMin, xMax) {
+                node.y = baseYScale(node.year) * config.verticalSpread + config.centerYOffset;
+
+                const t = (node.year - yearMin) / (yearMax - yearMin);
+                const curvedT = applyExpansionCurve(t, config.expansionCurve);
+                const baseWidth = 300;
+                const currentWidth = baseWidth + (baseWidth * config.expansion * curvedT);
+                const scaledWidth = currentWidth * config.horizontalSpread * config.nodeRepulsion;
+
+                if (node.children.length === 0) {
+                    node.x = config.width / 2 + (xMin + xMax) / 2 + config.centerXOffset;
+                } else {
+                    const totalDescendants = node.children.reduce((sum, c) => sum + countDescendants(c), 0);
+                    let currentPos = xMin;
+
+                    node.children.forEach(child => {
+                        const childDescendants = countDescendants(child);
+                        const childWidth = (childDescendants / totalDescendants) * scaledWidth;
+                        layout(child, currentPos, currentPos + childWidth);
+                        currentPos += childWidth;
+                    });
+
+                    node.x = config.width / 2 + d3.mean(node.children, d => d.x - config.width / 2) + config.centerXOffset;
+                }
+            }
+
+            const initialWidth = 1000;
+            layout(root, -initialWidth / 2, initialWidth / 2);
+        }
+
+        function layoutVertical(root, config) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+
+            const baseYScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([config.height - 150, 150]);
+
+            function layout(node, xMin, xMax) {
+                node.y = baseYScale(node.year) * config.verticalSpread + config.centerYOffset;
+                const width = (xMax - xMin) * config.horizontalSpread * config.nodeRepulsion;
+
+                if (node.children.length === 0) {
+                    node.x = config.width / 2 + (xMin + xMax) / 2 + config.centerXOffset;
+                } else {
+                    const step = width / node.children.length;
+                    node.children.forEach((c, i) => {
+                        layout(c, xMin + i * step, xMin + (i + 1) * step);
+                    });
+                    node.x = config.width / 2 + d3.mean(node.children, d => d.x - config.width / 2) + config.centerXOffset;
+                }
+            }
+
+            const baseWidth = 800;
+            layout(root, -baseWidth / 2, baseWidth / 2);
+        }
+
+        function layoutHorizontal(root, config) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+
+            const xScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([150, config.width - 150]);
+
+            function layout(node, yMin, yMax) {
+                node.x = xScale(node.year) * config.horizontalSpread + config.centerXOffset;
+                const height = (yMax - yMin) * config.verticalSpread * config.nodeRepulsion;
+
+                if (node.children.length === 0) {
+                    node.y = config.height / 2 + (yMin + yMax) / 2 + config.centerYOffset;
+                } else {
+                    const step = height / node.children.length;
+                    node.children.forEach((c, i) => {
+                        layout(c, yMin + i * step, yMin + (i + 1) * step);
+                    });
+                    node.y = config.height / 2 + d3.mean(node.children, d => d.y - config.height / 2) + config.centerYOffset;
+                }
+            }
+
+            const baseHeight = 600;
+            layout(root, -baseHeight / 2, baseHeight / 2);
+        }
+
+        function applyExpansionCurve(t, curveType) {
+            switch(curveType) {
+                case 'linear': return t;
+                case 'exponential': return t * t;
+                case 'logarithmic': return Math.sqrt(t);
+                case 'sigmoid': return 1 / (1 + Math.exp(-10 * (t - 0.5)));
+                default: return t;
+            }
+        }
+
+        function countDescendants(node) {
+            if (node.children.length === 0) return 1;
+            return node.children.reduce((sum, c) => sum + countDescendants(c), 0);
+        }
+
+        function drawTimelineRadial(svg, config, allNodes) {
+            const years = [...new Set(allNodes.map(n => n.year))].sort((a, b) => a - b);
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+
+            const radiusScale = d3.scaleLinear()
+                .domain([config.yearMin, config.yearMax])
+                .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
+
+            const timelineData = years.map(year => ({
+                year: year,
+                radius: yearRadii[year] || radiusScale(year)
+            }));
+
+            // Draw concentric circles
+            const circles = svg.selectAll('circle.timeline-ring')
+                .data(timelineData)
+                .join('circle')
+                .attr('class', 'timeline-ring')
+                .attr('cx', centerX)
+                .attr('cy', centerY)
+                .attr('r', d => d.radius);
+
+            // Make rings draggable
+            circles.call(d3.drag()
+                .on('start', function(event, d) {
+                    d3.select(this).classed('dragging', true);
+                })
+                .on('drag', function(event, d) {
+                    const dx = event.x - centerX;
+                    const dy = event.y - centerY;
+                    const newRadius = Math.sqrt(dx * dx + dy * dy);
+                    yearRadii[d.year] = newRadius;
+                    d3.select(this).attr('r', newRadius);
+                })
+                .on('end', function(event, d) {
+                    d3.select(this).classed('dragging', false);
+                    render();
+                })
+            );
+
+            // Draw labels
+            svg.selectAll('text.timeline')
+                .data(timelineData)
+                .join('text')
+                .attr('class', 'timeline-label')
+                .attr('x', centerX)
+                .attr('y', d => centerY - d.radius - 5)
+                .attr('text-anchor', 'middle')
+                .text(d => d.year);
+        }
+
+        function drawTimelineLinear(svg, config, allNodes) {
+            const years = [...new Set(allNodes.map(n => n.year))].sort((a, b) => a - b);
+            const baseYScale = d3.scaleLinear()
+                .domain([config.yearMin, config.yearMax])
+                .range([config.height - 150, 200]);
+
+            const timelineData = years.map(year => ({
+                year: year,
+                y: baseYScale(year) * config.verticalSpread + config.centerYOffset
+            }));
+
+            const lines = svg.selectAll('line.timeline')
+                .data(timelineData)
+                .join('line')
+                .attr('class', 'timeline-line')
+                .attr('x1', 100)
+                .attr('x2', config.width - 100)
+                .attr('y1', d => d.y)
+                .attr('y2', d => d.y);
+
+            svg.selectAll('text.timeline')
+                .data(timelineData)
+                .join('text')
+                .attr('class', 'timeline-label')
+                .attr('x', 60)
+                .attr('y', d => d.y + 4)
+                .text(d => d.year);
+        }
+
+        function drawBranches(svg, nodes, config) {
+            nodes.forEach(node => {
+                node.children.forEach(child => {
+                    if (!config.showExtinct && child.extinct) return;
+
+                    const path = d3.path();
+                    path.moveTo(node.x, node.y);
+
+                    const dx = child.x - node.x;
+                    const dy = child.y - node.y;
+                    const strength = config.curveStrength;
+
+                    switch(config.curveStyle) {
+                        case 'bezier':
+                            const cp1x = node.x + dx * 0.3;
+                            const cp1y = node.y + dy * strength;
+                            const cp2x = child.x - dx * 0.3;
+                            const cp2y = child.y - dy * (1 - strength);
+                            path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, child.x, child.y);
+                            break;
+                        case 'step':
+                            const midY = node.y + dy * strength;
+                            path.lineTo(node.x, midY);
+                            path.lineTo(child.x, midY);
+                            path.lineTo(child.x, child.y);
+                            break;
+                        case 'diagonal':
+                            path.lineTo(child.x, child.y);
+                            break;
+                        case 'organic':
+                            const variation = (node.id.length % 10) / 10;
+                            const cp1xOrg = node.x + dx * (0.2 + variation * 0.2);
+                            const cp1yOrg = node.y + dy * (strength * (0.8 + variation * 0.4));
+                            const cp2xOrg = child.x - dx * (0.2 + variation * 0.2);
+                            const cp2yOrg = child.y - dy * ((1 - strength) * (0.8 + variation * 0.4));
+                            path.bezierCurveTo(cp1xOrg, cp1yOrg, cp2xOrg, cp2yOrg, child.x, child.y);
+                            break;
+                    }
+
+                    svg.append('path')
+                        .attr('class', child.extinct ? 'branch extinct' : 'branch')
+                        .attr('d', path.toString())
+                        .attr('stroke', familyColors[child.family] || '#999')
+                        .attr('stroke-width', child.importance * config.lineThickness)
+                        .attr('opacity', child.extinct ? config.branchOpacity * 0.3 : config.branchOpacity);
+                });
+            });
+        }
+
+        function drawNodes(svg, nodes, config) {
+            const nodeGroups = svg.selectAll('g.node')
+                .data(nodes)
+                .join('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+
+            nodeGroups.append('circle')
+                .attr('r', d => (d.importance * config.nodeSize) + 2)
+                .attr('fill', d => familyColors[d.family] || '#999')
+                .attr('opacity', d => d.extinct ? 0.3 : 0.9)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 1.5)
+                .on('mouseover', function(event, d) {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.innerHTML = `
+                        <strong>${d.name}</strong><br>
+                        ${d.year} • ${data.families[d.family].label}<br>
+                        Importance: ${"⭐".repeat(d.importance)}<br>
+                        ${d.extinct ? '💀 Extinct' : '✨ Active'}<br>
+                        <em style="font-size: 10px;">${d.description}</em>
+                    `;
+                    tooltip.style.left = (event.pageX + 10) + 'px';
+                    tooltip.style.top = (event.pageY - 10) + 'px';
+                    tooltip.style.opacity = 1;
+                })
+                .on('mouseout', function() {
+                    document.getElementById('tooltip').style.opacity = 0;
+                });
+
+            if (config.enableDragging) {
+                nodeGroups.call(d3.drag()
+                    .on('start', function(event, d) {
+                        d3.select(this).raise();
+                    })
+                    .on('drag', function(event, d) {
+                        d.x = event.x;
+                        d.y = event.y;
+                        nodePositions.set(d.id, {x: d.x, y: d.y});
+                        d3.select(this).attr('transform', `translate(${d.x},${d.y})`);
+                        svg.selectAll('text.label')
+                            .filter(td => td.id === d.id)
+                            .attr('x', d.x)
+                            .attr('y', d.y + (d.children.length > 0 ? -12 : 15));
+                    })
+                    .on('end', function() {
+                        render();
+                    })
+                );
+            }
+        }
+
+        function drawLabels(svg, nodes, config) {
+            const visibleNodes = nodes.filter(d => d.importance >= config.labelThreshold);
+
+            svg.selectAll('text.label')
+                .data(visibleNodes)
+                .join('text')
+                .attr('class', 'label')
+                .attr('x', d => d.x)
+                .attr('y', d => d.y + (d.children.length > 0 ? -12 : 15))
+                .attr('text-anchor', 'middle')
+                .attr('font-family', config.fontFamily)
+                .attr('font-size', config.fontSize + 'px')
+                .attr('font-weight', config.fontWeight)
+                .attr('fill', d => {
+                    if (config.useFamilyColors) {
+                        return familyColors[d.family] || config.textColor;
+                    } else {
+                        return config.textColor;
+                    }
+                })
+                .attr('opacity', d => d.extinct ? config.textOpacity * 0.4 : config.textOpacity)
+                .text(d => d.name);
+        }
+
+        function resetSettings() {
+            document.getElementById('layoutAlgorithm').value = 'radial';
+            document.getElementById('canvasWidth').value = 3000;
+            document.getElementById('canvasHeight').value = 2400;
+            document.getElementById('widthExpansion').value = 10;
+            document.getElementById('expansionCurve').value = 'linear';
+            document.getElementById('curveStrength').value = 0.5;
+            document.getElementById('curveStyle').value = 'bezier';
+            document.getElementById('branchOpacity').value = 0.7;
+            document.getElementById('lineThickness').value = 1.5;
+            document.getElementById('nodeSize').value = 1.5;
+            document.getElementById('fontSize').value = 10;
+            document.getElementById('labelThreshold').value = 3;
+            document.getElementById('showExtinct').checked = true;
+            document.getElementById('showLabels').checked = true;
+            document.getElementById('showTimeline').checked = true;
+            document.getElementById('enableDragging').checked = true;
+            document.getElementById('bgColor').value = '#ffffff';
+            document.getElementById('horizontalSpread').value = 1.0;
+            document.getElementById('verticalSpread').value = 1.0;
+            document.getElementById('centerXOffset').value = 0;
+            document.getElementById('centerYOffset').value = 0;
+            document.getElementById('nodeRepulsion').value = 1.0;
+            document.getElementById('yearMin').value = 1958;
+            document.getElementById('yearMax').value = 2025;
+            document.getElementById('angleSpan').value = 180;
+            document.getElementById('startAngle').value = -90;
+            document.getElementById('innerRadius').value = 100;
+            document.getElementById('outerRadius').value = 800;
+
+            nodePositions.clear();
+            yearRadii = {};
+            render();
+        }
+
+        function exportSVG() {
+            const svg = document.querySelector('#canvas svg');
+            if (!svg) return;
+
+            const svgData = svg.outerHTML;
+            const blob = new Blob([svgData], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ai_phylogenetic_tree.svg';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPNG() {
+            const svg = document.querySelector('#canvas svg');
+            if (!svg) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = currentConfig.width * 2;
+            canvas.height = currentConfig.height * 2;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = currentConfig.bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(2, 2);
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            const blob = new Blob([svgData], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'ai_phylogenetic_tree_2x.png';
+                    link.click();
+                });
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+
+        // Initialize color palette with all families
+        function initializeColorPalette() {
+            const list = document.getElementById('familyColorList');
+            list.innerHTML = '';
+
+            Object.entries(data.families).forEach(([key, family]) => {
+                const item = document.createElement('div');
+                item.className = 'family-color-item';
+                item.innerHTML = `
+                    <div class="family-color-header">
+                        <span class="family-color-label">${family.label}</span>
+                        <input type="color"
+                               class="family-color-input"
+                               value="${familyColors[key]}"
+                               data-family="${key}"
+                               onchange="updateFamilyColor('${key}', this.value)">
+                    </div>
+                    <div style="font-size: 10px; color: #999; margin-top: 4px;">${family.description}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Toggle color palette visibility
+        function toggleColorPalette() {
+            const palette = document.getElementById('colorPalette');
+            palette.classList.toggle('visible');
+        }
+
+        // Update family color and re-render
+        function updateFamilyColor(familyKey, newColor) {
+            familyColors[familyKey] = newColor;
+            render();
+        }
+    </script>
+</body>
+</html>
