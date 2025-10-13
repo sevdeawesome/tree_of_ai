@@ -409,7 +409,7 @@
             <div class="control-section" id="timelineControls">
                 <h3>Timeline Ring Spacing (Radial)</h3>
                 <div class="section-help" style="margin-bottom: 12px;">
-                    Adjust the radius of individual year rings. Leave blank for auto-spacing.
+                    Adjust spacing from previous year ring. Leave blank for auto-spacing.
                 </div>
                 <div id="yearRadiusControls"></div>
                 <button class="btn-secondary" onclick="resetYearRadii()" style="margin-top: 10px;">Reset to Auto</button>
@@ -836,14 +836,33 @@
             const centerX = config.width / 2 + config.centerXOffset;
             const centerY = config.height / 2 + config.centerYOffset;
 
-            // Map years to radius
+            // Build year radius mapping with custom spacing
+            const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
+            const yearRadiusMap = {};
+
+            // Calculate base auto-spacing
             const radiusScale = d3.scaleLinear()
                 .domain([yearMin, yearMax])
                 .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
 
+            // Build cumulative radii with custom spacing
+            let currentRadius = config.innerRadius * config.verticalSpread;
+            years.forEach((year, i) => {
+                if (i === 0) {
+                    yearRadiusMap[year] = currentRadius;
+                } else {
+                    const prevYear = years[i - 1];
+                    const autoSpacing = radiusScale(year) - radiusScale(prevYear);
+                    const customSpacing = yearRadii[year]; // This is now a spacing delta, not absolute
+                    const spacing = customSpacing !== undefined ? customSpacing : autoSpacing;
+                    currentRadius += spacing;
+                    yearRadiusMap[year] = currentRadius;
+                }
+            });
+
             function layout(node, angleStart, angleEnd) {
-                // Get radius for this year
-                let radius = yearRadii[node.year] || radiusScale(node.year);
+                // Get radius for this year from the map
+                let radius = yearRadiusMap[node.year] || radiusScale(node.year);
 
                 const children = node.children;
                 if (children.length === 0) {
@@ -991,9 +1010,25 @@
                 .domain([config.yearMin, config.yearMax])
                 .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
 
+            // Build cumulative radii with custom spacing (same as layoutRadial)
+            const yearRadiusMap = {};
+            let currentRadius = config.innerRadius * config.verticalSpread;
+            years.forEach((year, i) => {
+                if (i === 0) {
+                    yearRadiusMap[year] = currentRadius;
+                } else {
+                    const prevYear = years[i - 1];
+                    const autoSpacing = radiusScale(year) - radiusScale(prevYear);
+                    const customSpacing = yearRadii[year];
+                    const spacing = customSpacing !== undefined ? customSpacing : autoSpacing;
+                    currentRadius += spacing;
+                    yearRadiusMap[year] = currentRadius;
+                }
+            });
+
             const timelineData = years.map(year => ({
                 year: year,
-                radius: yearRadii[year] || radiusScale(year)
+                radius: yearRadiusMap[year]
             }));
 
             // Draw concentric circles
@@ -1005,20 +1040,31 @@
                 .attr('cy', centerY)
                 .attr('r', d => d.radius);
 
-            // Make rings draggable
+            // Make rings draggable - now updates spacing delta
             circles.call(d3.drag()
                 .on('start', function(event, d) {
                     d3.select(this).classed('dragging', true);
+                    d.startRadius = d.radius;
                 })
                 .on('drag', function(event, d) {
                     const dx = event.x - centerX;
                     const dy = event.y - centerY;
                     const newRadius = Math.sqrt(dx * dx + dy * dy);
-                    yearRadii[d.year] = newRadius;
+
+                    // Calculate the spacing change from auto-spacing
+                    const yearIndex = years.indexOf(d.year);
+                    if (yearIndex > 0) {
+                        const prevYear = years[yearIndex - 1];
+                        const prevRadius = yearRadiusMap[prevYear];
+                        const newSpacing = newRadius - prevRadius;
+                        yearRadii[d.year] = newSpacing;
+                    }
+
                     d3.select(this).attr('r', newRadius);
                 })
                 .on('end', function(event, d) {
                     d3.select(this).classed('dragging', false);
+                    initializeYearRadiusControls();
                     render();
                 })
             );
@@ -1399,25 +1445,32 @@
             // Get unique years from the data
             const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
 
-            years.forEach(year => {
+            years.forEach((year, i) => {
                 const item = document.createElement('div');
                 item.className = 'control-group';
                 item.style.marginBottom = '8px';
 
-                const currentRadius = yearRadii[year] || '';
+                const currentSpacing = yearRadii[year] !== undefined ? yearRadii[year].toFixed(0) : '';
 
-                item.innerHTML = `
-                    <label style="font-size: 11px;">${year}</label>
-                    <input type="number"
-                           class="year-radius-input"
-                           data-year="${year}"
-                           min="50"
-                           max="2000"
-                           step="10"
-                           placeholder="Auto"
-                           value="${currentRadius}"
-                           style="font-size: 12px; padding: 6px;">
-                `;
+                // Skip first year (no spacing from previous)
+                if (i === 0) {
+                    item.innerHTML = `
+                        <label style="font-size: 11px; color: #999;">${year} (origin)</label>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <label style="font-size: 11px;">${year} spacing</label>
+                        <input type="number"
+                               class="year-radius-input"
+                               data-year="${year}"
+                               min="0"
+                               max="500"
+                               step="5"
+                               placeholder="Auto"
+                               value="${currentSpacing}"
+                               style="font-size: 12px; padding: 6px;">
+                    `;
+                }
                 container.appendChild(item);
             });
 
@@ -1428,7 +1481,7 @@
                     const value = parseFloat(this.value);
 
                     if (this.value === '' || isNaN(value)) {
-                        // Remove custom radius if blank
+                        // Remove custom spacing if blank
                         delete yearRadii[year];
                     } else {
                         yearRadii[year] = value;
