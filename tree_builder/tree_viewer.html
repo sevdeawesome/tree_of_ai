@@ -406,6 +406,11 @@
                     <input type="number" id="outerRadius" min="200" max="3000" step="50" value="800">
                     <div class="section-help">Size of outer edge/present (default: 800)</div>
                 </div>
+                <div class="control-group">
+                    <label>Branch Intersection % (Timeline Arcs only)</label>
+                    <input type="number" id="branchIntersection" min="0" max="100" step="5" value="50">
+                    <div class="section-help">Where new branches split off from previous arc. 0% = start, 50% = middle, 100% = end (default: 50)</div>
+                </div>
             </div>
 
             <div class="control-section" id="timelineControls">
@@ -745,6 +750,7 @@
                 startAngle: parseInt(document.getElementById('startAngle').value),
                 innerRadius: parseInt(document.getElementById('innerRadius').value),
                 outerRadius: parseInt(document.getElementById('outerRadius').value),
+                branchIntersection: parseInt(document.getElementById('branchIntersection').value) / 100,
                 fontFamily: document.getElementById('fontFamily').value,
                 fontWeight: document.getElementById('fontWeight').value,
                 textOpacity: parseFloat(document.getElementById('textOpacity').value),
@@ -1281,35 +1287,77 @@
         }
 
         function drawArcBranches(svg, nodes, config) {
-            // For radial-arcs mode: sweeping arcs from timeline origin to perimeter
-            // Use COLOR to show families, not explicit parent-child connections
+            // For radial-arcs mode: each arc starts at previous arc's midpoint and ends at node
+            // Creates branching tree effect like evolution.png
             const centerX = config.width / 2 + config.centerXOffset;
             const centerY = config.height / 2 + config.centerYOffset;
 
-            nodes.forEach(node => {
-                // Calculate origin position (where the node was "born" on timeline)
-                const originAngleRad = (node.angle + config.startAngle) * Math.PI / 180;
-                const originX = centerX + node.originRadius * Math.cos(originAngleRad);
-                const originY = centerY + node.originRadius * Math.sin(originAngleRad);
+            // Sort nodes by angle to process left to right
+            const sortedNodes = [...nodes].sort((a, b) => a.angle - b.angle);
 
-                // Perimeter position (where all nodes end up)
-                const perimeterX = node.x;
-                const perimeterY = node.y;
+            // Store arc paths for calculating midpoints
+            const arcData = [];
 
-                // Draw sweeping arc from timeline origin to perimeter
-                const path = d3.path();
-                path.moveTo(originX, originY);
+            sortedNodes.forEach((node, idx) => {
+                // Endpoint is always the node's perimeter position
+                const endX = node.x;
+                const endY = node.y;
 
-                // Create smooth bezier curve
-                const dx = perimeterX - originX;
-                const dy = perimeterY - originY;
+                let startX, startY;
+
+                if (idx === 0) {
+                    // First arc: starts from timeline origin, goes straight to perimeter
+                    const originAngleRad = (node.angle + config.startAngle) * Math.PI / 180;
+                    startX = centerX + node.originRadius * Math.cos(originAngleRad);
+                    startY = centerY + node.originRadius * Math.sin(originAngleRad);
+                } else {
+                    // Subsequent arcs: start at configurable point along previous arc
+                    const prevArc = arcData[idx - 1];
+
+                    // Calculate point at t along previous arc's bezier curve
+                    // Using De Casteljau's algorithm for bezier evaluation
+                    const t = config.branchIntersection; // 0 to 1
+
+                    // Bezier curve: B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
+                    const t1 = 1 - t;
+                    const t1_2 = t1 * t1;
+                    const t1_3 = t1_2 * t1;
+                    const t_2 = t * t;
+                    const t_3 = t_2 * t;
+
+                    startX = t1_3 * prevArc.startX +
+                             3 * t1_2 * t * prevArc.cp1x +
+                             3 * t1 * t_2 * prevArc.cp2x +
+                             t_3 * prevArc.endX;
+
+                    startY = t1_3 * prevArc.startY +
+                             3 * t1_2 * t * prevArc.cp1y +
+                             3 * t1 * t_2 * prevArc.cp2y +
+                             t_3 * prevArc.endY;
+                }
+
+                // Calculate bezier control points for smooth curve
+                const dx = endX - startX;
+                const dy = endY - startY;
                 const strength = config.curveStrength;
 
-                const cp1x = originX + dx * 0.3;
-                const cp1y = originY + dy * strength;
-                const cp2x = perimeterX - dx * 0.3;
-                const cp2y = perimeterY - dy * (1 - strength);
-                path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, perimeterX, perimeterY);
+                const cp1x = startX + dx * 0.3;
+                const cp1y = startY + dy * strength;
+                const cp2x = endX - dx * 0.3;
+                const cp2y = endY - dy * (1 - strength);
+
+                // Store arc data for next iteration
+                arcData.push({
+                    startX, startY,
+                    cp1x, cp1y,
+                    cp2x, cp2y,
+                    endX, endY
+                });
+
+                // Draw the arc
+                const path = d3.path();
+                path.moveTo(startX, startY);
+                path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
 
                 svg.append('path')
                     .attr('class', node.extinct ? 'branch extinct' : 'branch')
