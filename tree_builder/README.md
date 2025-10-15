@@ -1,88 +1,82 @@
-# AI Phylogenetic Tree Builder
+# AI Phylogenetic Tree Viewer
 
-An interactive web application for visualizing the evolution of artificial intelligence from the Perceptron (1958) to modern AGI (2025).
+Interactive web-based visualization of AI evolution from 1958 (Perceptron) to 2025 (AGI race), styled as a biological phylogenetic tree.
 
-## Files
+## Visual Reference
 
-- **tree_viewer.html** - Complete standalone HTML file with embedded data (opens directly in browser!)
-- **ai_tree_data.json** - Structured data for all 114 AI models (optional reference)
+**Design Inspiration**: See `evolution.png` and `evolution.pdf` - biological phylogenetic trees with:
+- Radial/semicircular layout
+- Narrow base expanding to wide canopy
+- Organic, sweeping branch curves
+- Text labels on outer perimeter
+- Natural "Tree of Life" aesthetic
+
+The goal is to match this museum-quality biological appearance.
 
 ## Quick Start
 
-Simply open `tree_viewer.html` in any modern web browser - no server or setup required!
+Open `tree_viewer.html` in a modern browser. No build process, no server required.
 
 ## Features
 
-### Layout Algorithms
-- **Fountain Explosion** - Narrow at bottom (1958), dramatically wide at top (2025)
-- **Vertical Dendrogram** - Traditional top-to-bottom tree
-- **Horizontal Tree** - Left-to-right time flow
-- **Radial (Semicircle)** - Polar coordinate layout
+### Layouts
+- **Radial** - Biological tree with concentric year rings (matches evolution.png)
+- **Fountain** - Vertical explosion with expanding width
+- **Vertical** - Traditional dendrogram
+- **Horizontal** - Left-to-right timeline
 
-### Interactive Controls
-- Canvas dimensions (1200-4800px width, 1000-4000px height)
-- Width expansion (2x-20x fountain effect)
-- Curve strength (0-1 for organic sweeping branches)
-- Branch spacing, opacity, thickness
-- Node size and font size
-- Filter extinct models, toggle labels and timeline
-- Label threshold by importance
+### Controls
+- **Text Styling** - 10 Google Fonts, sizes, weights, per-family colors
+- **Label Positioning** - At nodes, on perimeter, extended from perimeter
+- **Timeline Ring Spacing** - Adjust relative spacing between years
+- **Family Colors** - Customize all 17 AI families
+- **Visual Style** - Opacity, thickness, curves, node sizes
+- **Filters** - Date ranges, importance, extinct models
 
-### Export Options
-- SVG (vector, editable in Adobe Illustrator)
-- PNG (high-res raster, 2x resolution)
+### Keyboard Navigation
+- **WASD/Arrows** - Pan canvas
+- **Z/X** - Zoom in/out
 
-## Data Structure
+### Export
+- **SVG** - Vector (editable in Illustrator)
+- **PNG** - High-res 2x
 
-The visualization includes:
-- **114 AI models** from 1958-2025
-- **17 family categories** (Transformers, CNNs, RNNs, GANs, RL, Diffusion, etc.)
-- **Parent-child relationships** showing evolutionary lineages
-- **Importance ratings** (1-5 stars)
-- **Extinction status** for deprecated technologies
-- **Breakthrough markers** for revolutionary moments
+## Data
 
-## Usage Tips
+114 models across 17 families:
+- Symbolic AI, Neural Networks, CNNs, RNNs (extinct)
+- GANs (extinct), Reinforcement Learning
+- Transformers, BERT, GPT, Claude, Gemini
+- LLaMA, Chinese AI, Diffusion, Multimodal
 
-1. **Start with Fountain Explosion layout** - This matches the biological evolution tree aesthetic
-2. **Adjust width expansion** (10x-15x) for dramatic spreading effect
-3. **Toggle extinct models** to focus on active technologies
-4. **Adjust label threshold** to reduce clutter (show only 4-5 star importance)
-5. **Export high-res** by increasing canvas dimensions before exporting PNG
+## Common Tasks
 
-## Color-Coded Families
+**Publication-ready export**: Set canvas to 6000×6000, use radial + extended perimeter labels, export PNG
 
-- **Dark Slate**: Origin (Perceptron)
-- **Brown**: Symbolic AI (extinct)
-- **Steel Blue**: Neural Networks
-- **Purple**: CNNs
-- **Royal Blue**: RNNs (mostly extinct)
-- **Orange**: GANs (extinct)
-- **Green**: Reinforcement Learning
-- **Cyan**: Transformers
-- **Dark Magenta**: Encoder Transformers (BERT)
-- **Deep Sky Blue**: Decoder Transformers (GPT)
-- **Medium Slate Blue**: Claude (Anthropic)
-- **Dark Cyan**: Google AI (PaLM, Gemini)
-- **Orange Red**: LLaMA (Meta)
-- **Crimson**: Chinese AI
-- **Deep Pink**: Diffusion Models
-- **Orchid**: Multimodal Models
-- **Silver**: Other
+**Focus modern AI**: Filter 2020-2025, adjust year spacing, threshold 3+
 
-## Technical Details
+**Custom colors**: Family Colors section → customize all 17 families
 
-- Built with D3.js v7
-- Pure JavaScript, no build tools
-- All data embedded (no CORS issues)
-- Responsive SVG rendering
-- Interactive tooltips on hover
-- Real-time parameter adjustments
+## Technical
 
-## Future Enhancements
+- Single-file HTML app
+- D3.js v7 rendering
+- Embedded JSON data (114 models)
+- Real-time updates
 
-To add new models, edit the embedded `data` object in tree_viewer.html or update `ai_tree_data.json` and rebuild.
+## Troubleshooting
 
----
+- **Overlapping labels?** Increase spread/repulsion, use perimeter positioning
+- **Squashed tree?** Increase vertical spread or outer radius
+- **Export fails?** Check popup blocker, try smaller canvas or SVG
 
-Created for the AI Evolution Visualization Project • 2025
+## Files
+
+```
+tree_builder/
+├── tree_viewer.html    # Main application
+├── README.md           # This file
+└── CLAUDE.md           # Developer docs
+```
+
+See CLAUDE.md for implementation details.

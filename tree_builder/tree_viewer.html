@@ -336,11 +336,13 @@
                     <label>Base Layout</label>
                     <select id="layoutAlgorithm">
                         <option value="radial">Radial (Biological Tree)</option>
+                        <option value="radial-chronological">Radial Chronological</option>
+                        <option value="radial-arcs">Radial Timeline Arcs (Evolution Poster)</option>
                         <option value="fountain">Fountain Explosion</option>
                         <option value="vertical">Vertical Dendrogram</option>
                         <option value="horizontal">Horizontal Tree</option>
                     </select>
-                    <div class="section-help">Radial matches evolution.png!</div>
+                    <div class="section-help">Try 'Radial Timeline Arcs' for sweeping evolution.png style!</div>
                 </div>
             </div>
 
@@ -410,6 +412,14 @@
                 <h3>Timeline Ring Spacing (Radial)</h3>
                 <div class="section-help" style="margin-bottom: 12px;">
                     Adjust spacing from previous year ring. Leave blank for auto-spacing.
+                </div>
+                <div class="control-group">
+                    <label>Set All Spacings (px)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="globalSpacing" min="0" max="500" step="5" placeholder="e.g. 20" style="flex: 1;">
+                        <button class="btn-primary" onclick="setAllSpacings()" style="width: auto; padding: 6px 12px; margin: 0;">Apply</button>
+                    </div>
+                    <div class="section-help">Set uniform spacing for all year rings</div>
                 </div>
                 <div id="yearRadiusControls"></div>
                 <button class="btn-secondary" onclick="resetYearRadii()" style="margin-top: 10px;">Reset to Auto</button>
@@ -782,6 +792,10 @@
             roots.forEach(root => {
                 if (currentConfig.layout === 'radial') {
                     layoutRadial(root, currentConfig);
+                } else if (currentConfig.layout === 'radial-chronological') {
+                    layoutRadialChronological(root, currentConfig);
+                } else if (currentConfig.layout === 'radial-arcs') {
+                    layoutRadialArcs(root, currentConfig, filteredModels);
                 } else if (currentConfig.layout === 'fountain') {
                     layoutFountain(root, currentConfig);
                 } else if (currentConfig.layout === 'vertical') {
@@ -809,7 +823,7 @@
 
             // Draw timeline
             if (currentConfig.showTimeline) {
-                if (currentConfig.layout === 'radial') {
+                if (currentConfig.layout === 'radial' || currentConfig.layout === 'radial-chronological' || currentConfig.layout === 'radial-arcs') {
                     drawTimelineRadial(svg, currentConfig, allNodes);
                 } else {
                     drawTimelineLinear(svg, currentConfig, allNodes);
@@ -817,7 +831,11 @@
             }
 
             // Draw branches
-            drawBranches(svg, visibleNodes, currentConfig);
+            if (currentConfig.layout === 'radial-arcs') {
+                drawArcBranches(svg, visibleNodes, currentConfig);
+            } else {
+                drawBranches(svg, visibleNodes, currentConfig);
+            }
 
             // Draw nodes
             drawNodes(svg, visibleNodes, currentConfig);
@@ -892,6 +910,159 @@
             }
 
             layout(root, 0, config.angleSpan);
+        }
+
+        function layoutRadialChronological(root, config) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+
+            // Build year radius mapping with custom spacing (same as layoutRadial)
+            const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
+            const yearRadiusMap = {};
+
+            // Calculate base auto-spacing
+            const radiusScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
+
+            // Build cumulative radii with custom spacing
+            let currentRadius = config.innerRadius * config.verticalSpread;
+            years.forEach((year, i) => {
+                if (i === 0) {
+                    yearRadiusMap[year] = currentRadius;
+                } else {
+                    const prevYear = years[i - 1];
+                    const autoSpacing = radiusScale(year) - radiusScale(prevYear);
+                    const customSpacing = yearRadii[year];
+                    const spacing = customSpacing !== undefined ? customSpacing : autoSpacing;
+                    currentRadius += spacing;
+                    yearRadiusMap[year] = currentRadius;
+                }
+            });
+
+            // Collect ALL nodes in chronological order (breadth-first by year)
+            const allNodesChronological = [];
+            function collectAll(node) {
+                allNodesChronological.push(node);
+                node.children.forEach(collectAll);
+            }
+            collectAll(root);
+            allNodesChronological.sort((a, b) => a.year - b.year);
+
+            // Assign wedges hierarchically: parent's wedge is subdivided among children
+            // Each node gets an [angleStart, angleEnd] wedge
+            const wedges = new Map();
+
+            function layoutChronological(node, angleStart, angleEnd) {
+                // Store this node's wedge
+                wedges.set(node.id, { angleStart, angleEnd });
+
+                // Get radius for this year from the map
+                let radius = yearRadiusMap[node.year] || radiusScale(node.year);
+
+                const children = node.children;
+
+                if (children.length === 0) {
+                    // Leaf node - place at midpoint of wedge
+                    node.angle = (angleStart + angleEnd) / 2;
+                } else {
+                    // Internal node - subdivide wedge among children by descendant count
+                    const totalDescendants = children.reduce((sum, c) => sum + countDescendants(c), 0);
+
+                    // Calculate wedge width with repulsion factor
+                    const wedgeWidth = (angleEnd - angleStart) * config.horizontalSpread * config.nodeRepulsion;
+                    const wedgeCenter = (angleStart + angleEnd) / 2;
+                    const wedgeActualStart = wedgeCenter - wedgeWidth / 2;
+                    const wedgeActualEnd = wedgeCenter + wedgeWidth / 2;
+
+                    let currentAngle = wedgeActualStart;
+
+                    // Recursively assign wedges to children
+                    children.forEach(child => {
+                        const childDescendants = countDescendants(child);
+                        const childWedgeSize = (wedgeActualEnd - wedgeActualStart) * childDescendants / totalDescendants;
+                        layoutChronological(child, currentAngle, currentAngle + childWedgeSize);
+                        currentAngle += childWedgeSize;
+                    });
+
+                    // Place parent at weighted average angle of children (by descendant count)
+                    node.angle = children.reduce((sum, c, i) => {
+                        const childDescendants = countDescendants(c);
+                        return sum + (c.angle * childDescendants);
+                    }, 0) / totalDescendants;
+                }
+
+                // Convert polar to cartesian
+                const angleRad = (node.angle + config.startAngle) * Math.PI / 180;
+                node.x = centerX + radius * Math.cos(angleRad);
+                node.y = centerY + radius * Math.sin(angleRad);
+                node.radius = radius; // Store for timeline drawing
+            }
+
+            // Start with root getting the full angle span
+            layoutChronological(root, 0, config.angleSpan);
+        }
+
+        function layoutRadialArcs(root, config, filteredModels) {
+            const yearMin = config.yearMin;
+            const yearMax = config.yearMax;
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+
+            // Build year radius mapping (for timeline rings)
+            const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
+            const yearRadiusMap = {};
+
+            const radiusScale = d3.scaleLinear()
+                .domain([yearMin, yearMax])
+                .range([config.innerRadius * config.verticalSpread, config.outerRadius * config.verticalSpread]);
+
+            let currentRadius = config.innerRadius * config.verticalSpread;
+            years.forEach((year, i) => {
+                if (i === 0) {
+                    yearRadiusMap[year] = currentRadius;
+                } else {
+                    const prevYear = years[i - 1];
+                    const autoSpacing = radiusScale(year) - radiusScale(prevYear);
+                    const customSpacing = yearRadii[year];
+                    const spacing = customSpacing !== undefined ? customSpacing : autoSpacing;
+                    currentRadius += spacing;
+                    yearRadiusMap[year] = currentRadius;
+                }
+            });
+
+            // Collect all nodes and sort by year (chronologically)
+            const allNodes = [];
+            function collectAll(node) {
+                allNodes.push(node);
+                node.children.forEach(collectAll);
+            }
+            collectAll(root);
+
+            // Sort chronologically: oldest to newest
+            allNodes.sort((a, b) => a.year - b.year);
+
+            // Assign angles chronologically: oldest LEFT (small angle), newest RIGHT (large angle)
+            const totalAngleSpan = config.angleSpan;
+
+            allNodes.forEach((node, idx) => {
+                // Distribute angle from 0 to angleSpan based on chronological order
+                node.angle = (idx / (allNodes.length - 1 || 1)) * totalAngleSpan;
+
+                // ALL nodes placed at PERIMETER (outer radius)
+                const perimeterRadius = config.outerRadius * config.verticalSpread;
+
+                // But also store the origin radius (where it was "born")
+                node.originRadius = yearRadiusMap[node.year] || radiusScale(node.year);
+
+                // Convert to cartesian (perimeter position)
+                const angleRad = (node.angle + config.startAngle) * Math.PI / 180;
+                node.x = centerX + perimeterRadius * Math.cos(angleRad);
+                node.y = centerY + perimeterRadius * Math.sin(angleRad);
+                node.radius = perimeterRadius; // For label positioning
+            });
         }
 
         function layoutFountain(root, config) {
@@ -1109,6 +1280,46 @@
                 .text(d => d.year);
         }
 
+        function drawArcBranches(svg, nodes, config) {
+            // For radial-arcs mode: sweeping arcs from timeline origin to perimeter
+            // Use COLOR to show families, not explicit parent-child connections
+            const centerX = config.width / 2 + config.centerXOffset;
+            const centerY = config.height / 2 + config.centerYOffset;
+
+            nodes.forEach(node => {
+                // Calculate origin position (where the node was "born" on timeline)
+                const originAngleRad = (node.angle + config.startAngle) * Math.PI / 180;
+                const originX = centerX + node.originRadius * Math.cos(originAngleRad);
+                const originY = centerY + node.originRadius * Math.sin(originAngleRad);
+
+                // Perimeter position (where all nodes end up)
+                const perimeterX = node.x;
+                const perimeterY = node.y;
+
+                // Draw sweeping arc from timeline origin to perimeter
+                const path = d3.path();
+                path.moveTo(originX, originY);
+
+                // Create smooth bezier curve
+                const dx = perimeterX - originX;
+                const dy = perimeterY - originY;
+                const strength = config.curveStrength;
+
+                const cp1x = originX + dx * 0.3;
+                const cp1y = originY + dy * strength;
+                const cp2x = perimeterX - dx * 0.3;
+                const cp2y = perimeterY - dy * (1 - strength);
+                path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, perimeterX, perimeterY);
+
+                svg.append('path')
+                    .attr('class', node.extinct ? 'branch extinct' : 'branch')
+                    .attr('d', path.toString())
+                    .attr('stroke', familyColors[node.family] || '#999')
+                    .attr('stroke-width', node.importance * config.lineThickness)
+                    .attr('opacity', node.extinct ? config.branchOpacity * 0.3 : config.branchOpacity);
+            });
+        }
+
         function drawBranches(svg, nodes, config) {
             nodes.forEach(node => {
                 node.children.forEach(child => {
@@ -1214,7 +1425,7 @@
             const visibleNodes = nodes.filter(d => d.importance >= config.labelThreshold);
             const centerX = config.width / 2 + config.centerXOffset;
             const centerY = config.height / 2 + config.centerYOffset;
-            const isRadial = config.layout === 'radial';
+            const isRadial = config.layout === 'radial' || config.layout === 'radial-chronological' || config.layout === 'radial-arcs';
 
             // Draw connector lines for extended positioning
             if (isRadial && config.labelPositioning === 'extended') {
@@ -1494,6 +1705,30 @@
         // Reset all year radii to auto
         function resetYearRadii() {
             yearRadii = {};
+            initializeYearRadiusControls();
+            render();
+        }
+
+        // Set all year spacings to a uniform value
+        function setAllSpacings() {
+            const globalValue = parseFloat(document.getElementById('globalSpacing').value);
+
+            if (isNaN(globalValue) || globalValue < 0) {
+                alert('Please enter a valid spacing value (e.g., 20)');
+                return;
+            }
+
+            // Get all years except the first (origin)
+            const years = [...new Set(data.models.map(m => m.year))].sort((a, b) => a - b);
+
+            // Set all year spacings to the global value (skip first year)
+            years.forEach((year, i) => {
+                if (i > 0) {
+                    yearRadii[year] = globalValue;
+                }
+            });
+
+            // Update the UI controls and re-render
             initializeYearRadiusControls();
             render();
         }
